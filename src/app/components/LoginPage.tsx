@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, KeyRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
 import { t } from '../translations'
@@ -61,17 +61,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-sand-50 px-6">
+    <div className="kr-skyline-bg min-h-screen flex flex-col items-center justify-center bg-sand-50 px-6">
       <div className="max-w-sm w-full">
         <button onClick={() => navigate('/select-block')} className="flex items-center gap-1 text-forest-600 text-sm mb-6">
           <ArrowLeft size={16} /> {t(lang, 'back')}
         </button>
 
-        <h2 className="font-display text-2xl font-semibold text-forest-900 mb-6 text-center">
-          {mode === 'login' ? t(lang, 'login') : t(lang, 'register')}
-        </h2>
+        <div className="flex items-center gap-3 justify-center mb-6">
+          <span className="bg-forest-100 text-forest-700 rounded-xl p-2.5">
+            <KeyRound size={20} />
+          </span>
+          <h2 className="font-display text-2xl font-semibold text-forest-900">
+            {mode === 'login' ? t(lang, 'login') : t(lang, 'register')}
+          </h2>
+        </div>
 
-        <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="bg-white border border-sand-200 rounded-2xl p-6 grid gap-4">
+        <form
+          onSubmit={mode === 'login' ? handleLogin : handleRegister}
+          className="bg-white border border-sand-200 rounded-2xl shadow-sm p-6 grid gap-4"
+        >
           {mode === 'register' && role === 'resident' && (
             <>
               <Field label={t(lang, 'fullName')} value={fullName} onChange={setFullName} required />
@@ -135,7 +143,7 @@ function Field({
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="border border-sand-200 rounded-lg px-3 py-2 focus:border-forest-400"
+        className="border border-sand-200 rounded-lg px-3 py-2 focus:border-forest-400 outline-none"
       />
     </label>
   )
