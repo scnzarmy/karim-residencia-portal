@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   LogOut,
   Pin,
@@ -12,6 +12,7 @@ import {
   Newspaper,
   Activity,
   MessageSquareWarning,
+  Moon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
@@ -25,6 +26,7 @@ const TABS = [
   { key: 'noticeBoard', icon: Bell, bg: 'bg-forest-100', fg: 'text-forest-700' },
   { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700' },
   { key: 'liveStatus', icon: Activity, bg: 'bg-purple-100', fg: 'text-purple-700' },
+  { key: 'namazTimings', icon: Moon, bg: 'bg-purple-100', fg: 'text-purple-700' },
   { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700' },
 ] as const
 
@@ -47,9 +49,16 @@ export default function CommitteeDashboard() {
     complaints,
     pendingResidents,
     approvedResidents,
+    blockInfo,
+    updateNamazTimings,
     signOutAll,
     refreshBlockData,
   } = useApp()
+  const [timingsDraft, setTimingsDraft] = useState(blockInfo?.namaz_timings ?? '')
+
+  useEffect(() => {
+    setTimingsDraft(blockInfo?.namaz_timings ?? '')
+  }, [blockInfo])
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('overview')
 
   async function approveResident(id: string) {
@@ -260,6 +269,24 @@ export default function CommitteeDashboard() {
                 <span className="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-700">{s.status}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'namazTimings' && (
+          <div className="bg-white border border-sand-200 border-l-4 border-l-purple-400 rounded-xl p-4 grid gap-3">
+            <p className="text-forest-900 font-medium">{blockInfo?.namaz_venue ?? 'Masjid Ayesha'}</p>
+            <textarea
+              value={timingsDraft}
+              onChange={(e) => setTimingsDraft(e.target.value)}
+              placeholder="Fajr 5:15 AM · Zuhr 1:30 PM · Asr 5:00 PM · Maghrib sunset · Isha 8:15 PM"
+              className="border border-sand-200 rounded-lg px-3 py-2 text-sm min-h-[70px]"
+            />
+            <button
+              onClick={() => updateNamazTimings(timingsDraft)}
+              className="bg-forest-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-forest-700 transition"
+            >
+              {t(lang, 'submit')}
+            </button>
           </div>
         )}
 

@@ -39,6 +39,13 @@ export interface StatusItem {
   updated_at: string
 }
 
+export interface BlockInfo {
+  id: BlockId
+  name: string
+  namaz_venue: string
+  namaz_timings: string
+}
+
 export interface Complaint {
   id: string
   block_id: BlockId
@@ -65,6 +72,8 @@ interface AppState {
   complaints: Complaint[]
   pendingResidents: Profile[]
   approvedResidents: Profile[]
+  blockInfo: BlockInfo | null
+  updateNamazTimings: (timings: string) => Promise<void>
   refreshBlockData: () => Promise<void>
   signOutAll: () => Promise<void>
 }
@@ -84,6 +93,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [pendingResidents, setPendingResidents] = useState<Profile[]>([])
   const [approvedResidents, setApprovedResidents] = useState<Profile[]>([])
+  const [blockInfo, setBlockInfo] = useState<BlockInfo | null>(null)
 
   function setLang(l: Lang) {
     localStorage.setItem('kr_lang', l)
@@ -126,14 +136,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   async function refreshBlockData() {
     if (!selectedBlock) return
 
-    const [noticesRes, newsRes, statusRes] = await Promise.all([
+    const [noticesRes, newsRes, statusRes, blockRes] = await Promise.all([
       supabase.from('notices').select('*').eq('block_id', selectedBlock).order('pinned', { ascending: false }).order('created_at', { ascending: false }),
       supabase.from('news').select('*').eq('block_id', selectedBlock).order('created_at', { ascending: false }),
       supabase.from('live_status').select('*').eq('block_id', selectedBlock).order('label'),
+      supabase.from('blocks').select('*').eq('id', selectedBlock).single(),
     ])
     if (noticesRes.data) setNotices(noticesRes.data as Notice[])
     if (newsRes.data) setNews(newsRes.data as NewsItem[])
     if (statusRes.data) setLiveStatus(statusRes.data as StatusItem[])
+    if (blockRes.data) setBlockInfo(blockRes.data as BlockInfo)
 
     if (profile?.role === 'resident') {
       const { data } = await supabase
@@ -171,6 +183,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBlock, profile])
 
+  async function updateNamazTimings(timings: string) {
+    if (!selectedBlock) return
+    await supabase.from('blocks').update({ namaz_timings: timings }).eq('id', selectedBlock)
+    refreshBlockData()
+  }
+
   async function signOutAll() {
     await supabase.auth.signOut()
     setProfile(null)
@@ -198,10 +216,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       complaints,
       pendingResidents,
       approvedResidents,
+      blockInfo,
+      updateNamazTimings,
       refreshBlockData,
       signOutAll,
     }),
-    [lang, role, selectedBlock, profile, loadingProfile, notices, news, liveStatus, complaints, pendingResidents, approvedResidents],
+    [lang, role, selectedBlock, profile, loadingProfile, notices, news, liveStatus, complaints, pendingResidents, approvedResidents, blockInfo],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

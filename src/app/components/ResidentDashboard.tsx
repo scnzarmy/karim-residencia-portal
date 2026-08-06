@@ -7,8 +7,6 @@ import { supabase } from '../../lib/supabaseClient'
 import ChatBot from './ChatBot'
 import RulesPanel from './RulesPanel'
 
-const NAMAZ_VENUE: Record<string, string> = { A: 'P1 Musallah', B: 'Block B Musallah', C: 'Masjid Ayesha' }
-
 const TILES = [
   { key: 'noticeBoard', icon: Bell, bg: 'bg-forest-100', fg: 'text-forest-700' },
   { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700' },
@@ -18,7 +16,7 @@ const TILES = [
 ] as const
 
 export default function ResidentDashboard() {
-  const { lang, profile, selectedBlock, notices, news, liveStatus, complaints, signOutAll, refreshBlockData } = useApp()
+  const { lang, profile, selectedBlock, notices, news, liveStatus, complaints, blockInfo, signOutAll, refreshBlockData } = useApp()
   const [tab, setTab] = useState<(typeof TILES)[number]['key']>('noticeBoard')
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
@@ -148,7 +146,12 @@ export default function ResidentDashboard() {
 
         {tab === 'namazTimings' && (
           <div className="bg-white border border-sand-200 border-l-4 border-l-purple-400 rounded-xl p-4">
-            <p className="text-forest-900 font-medium">{selectedBlock ? NAMAZ_VENUE[selectedBlock] : ''}</p>
+            <p className="text-forest-900 font-medium">{blockInfo?.namaz_venue}</p>
+            {blockInfo?.namaz_timings ? (
+              <p className="text-sm text-forest-700 mt-2">{blockInfo.namaz_timings}</p>
+            ) : (
+              <p className="text-sm text-forest-400 mt-2">{t(lang, 'noData')}</p>
+            )}
           </div>
         )}
 
