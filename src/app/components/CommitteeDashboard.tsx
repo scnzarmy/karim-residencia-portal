@@ -123,33 +123,39 @@ export default function CommitteeDashboard() {
 
   return (
     <div className="min-h-screen bg-sand-50">
-      <header className="bg-white border-b border-sand-200 px-5 pt-5 pb-3 sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-xs text-forest-500">{t(lang, 'committee')}</p>
-            <h1 className="font-display text-xl font-semibold text-forest-900">
-              {t(lang, 'appName')} · {selectedBlock}
-            </h1>
-          </div>
-          <button onClick={signOutAll} className="text-forest-600" aria-label={t(lang, 'logout')}>
-            <LogOut size={18} />
-          </button>
-        </div>
-
-        <nav className="flex gap-1 overflow-x-auto pb-1">
-          {TABS.map(({ key, icon: Icon, bg, fg }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition ${
-                tab === key ? 'bg-forest-600 text-white' : `${bg} ${fg}`
-              }`}
-            >
-              <Icon size={13} />
-              {t(lang, key)}
+      <header
+        className="relative bg-cover bg-center px-5 pt-5 pb-3 sticky top-0 z-10"
+        style={{ backgroundImage: "url('/building-secondary.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-forest-900/85 to-forest-800/90" />
+        <div className="relative">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs text-white/70">{t(lang, 'committee')}</p>
+              <h1 className="font-display text-xl font-semibold text-white">
+                {t(lang, 'appName')} · {selectedBlock}
+              </h1>
+            </div>
+            <button onClick={signOutAll} className="text-white/90" aria-label={t(lang, 'logout')}>
+              <LogOut size={18} />
             </button>
-          ))}
-        </nav>
+          </div>
+
+          <nav className="flex gap-1 overflow-x-auto pb-1">
+            {TABS.map(({ key, icon: Icon, bg, fg }) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition ${
+                  tab === key ? 'bg-white text-forest-800' : `${bg} ${fg}`
+                }`}
+              >
+                <Icon size={13} />
+                {t(lang, key)}
+              </button>
+            ))}
+          </nav>
+        </div>
       </header>
 
       <main className="p-4 max-w-2xl mx-auto grid gap-4">

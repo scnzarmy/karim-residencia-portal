@@ -58,39 +58,47 @@ export default function ResidentDashboard() {
 
   return (
     <div className="min-h-screen bg-sand-50">
-      <header className="bg-white border-b border-sand-200 px-5 pt-5 pb-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-xs text-forest-500">{selectedBlock ? `${t(lang, 'appName')} · ${selectedBlock}` : ''}</p>
-            <h1 className="font-display text-xl font-semibold text-forest-900">
-              {firstName ? `Hi, ${firstName}` : t(lang, 'appName')}
-            </h1>
+      <header
+        className="relative bg-cover bg-center px-5 pt-5 pb-4 sticky top-0 z-10"
+        style={{ backgroundImage: "url('/building-secondary.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-forest-900/85 to-forest-800/90" />
+        <div className="relative">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs text-white/70">{selectedBlock ? `${t(lang, 'appName')} · ${selectedBlock}` : ''}</p>
+              <h1 className="font-display text-xl font-semibold text-white">
+                {firstName ? `Hi, ${firstName}` : t(lang, 'appName')}
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setShowRules(true)} className="text-xs text-white/90 underline">
+                {t(lang, 'rules')}
+              </button>
+              <button onClick={signOutAll} className="text-white/90" aria-label={t(lang, 'logout')}>
+                <LogOut size={18} />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setShowRules(true)} className="text-xs text-forest-700 underline">
-              {t(lang, 'rules')}
-            </button>
-            <button onClick={signOutAll} className="text-forest-600" aria-label={t(lang, 'logout')}>
-              <LogOut size={18} />
-            </button>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-5 gap-2">
-          {TILES.map(({ key, icon: Icon, bg, fg }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex flex-col items-center gap-1.5 rounded-xl py-2.5 transition ${
-                tab === key ? `${bg} ring-2 ring-offset-1 ring-forest-400` : 'bg-sand-50 hover:bg-sand-100'
-              }`}
-            >
-              <span className={`${bg} ${fg} rounded-lg p-2`}>
-                <Icon size={16} />
-              </span>
-              <span className="text-[10px] text-forest-700 text-center leading-tight px-0.5">{t(lang, key)}</span>
-            </button>
-          ))}
+          <div className="grid grid-cols-5 gap-2">
+            {TILES.map(({ key, icon: Icon, bg, fg }) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`flex flex-col items-center gap-1.5 rounded-xl py-2.5 transition ${
+                  tab === key ? 'bg-white ring-2 ring-offset-1 ring-white/60' : 'bg-white/15 backdrop-blur hover:bg-white/25'
+                }`}
+              >
+                <span className={`${tab === key ? `${bg} ${fg}` : 'bg-white/20 text-white'} rounded-lg p-2`}>
+                  <Icon size={16} />
+                </span>
+                <span className={`text-[10px] text-center leading-tight px-0.5 ${tab === key ? 'text-forest-700' : 'text-white/90'}`}>
+                  {t(lang, key)}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
