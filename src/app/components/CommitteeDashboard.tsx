@@ -234,20 +234,24 @@ export default function CommitteeDashboard() {
             </button>
           </div>
 
-          <nav className="flex gap-1 overflow-x-auto pb-1">
+          <div className="grid grid-cols-4 gap-1.5">
             {TABS.map(({ key, icon: Icon, bg, fg }) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition ${
-                  tab === key ? 'bg-white text-forest-800' : `${bg} ${fg}`
+                className={`flex flex-col items-center gap-1 rounded-xl py-2 px-1 transition ${
+                  tab === key ? 'bg-white shadow-md' : 'bg-white/15 backdrop-blur hover:bg-white/25'
                 }`}
               >
-                <Icon size={13} />
-                {t(lang, key)}
+                <span className={`${tab === key ? `${bg} ${fg}` : 'bg-white/20 text-white'} rounded-lg p-1.5`}>
+                  <Icon size={14} />
+                </span>
+                <span className={`text-[9px] text-center leading-tight ${tab === key ? 'text-forest-700 font-medium' : 'text-white/90'}`}>
+                  {t(lang, key)}
+                </span>
               </button>
             ))}
-          </nav>
+          </div>
         </div>
       </header>
 
