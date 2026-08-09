@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   LogOut,
   Pin,
@@ -13,6 +13,12 @@ import {
   Activity,
   MessageSquareWarning,
   Moon,
+  Wallet,
+  CalendarDays,
+  FileText,
+  AlertTriangle,
+  Vote,
+  Upload,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
@@ -27,6 +33,11 @@ const TABS = [
   { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700' },
   { key: 'liveStatus', icon: Activity, bg: 'bg-purple-100', fg: 'text-purple-700' },
   { key: 'namazTimings', icon: Moon, bg: 'bg-purple-100', fg: 'text-purple-700' },
+  { key: 'dues', icon: Wallet, bg: 'bg-emerald-100', fg: 'text-emerald-700' },
+  { key: 'events', icon: CalendarDays, bg: 'bg-indigo-100', fg: 'text-indigo-700' },
+  { key: 'documents', icon: FileText, bg: 'bg-orange-100', fg: 'text-orange-700' },
+  { key: 'alerts', icon: AlertTriangle, bg: 'bg-rose-100', fg: 'text-rose-700' },
+  { key: 'polls', icon: Vote, bg: 'bg-cyan-100', fg: 'text-cyan-700' },
   { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700' },
 ] as const
 
@@ -39,6 +50,8 @@ function initials(name: string) {
     .toUpperCase()
 }
 
+const PRAYERS = ['fajr', 'zuhr', 'asr', 'maghrib', 'isha'] as const
+
 export default function CommitteeDashboard() {
   const {
     lang,
@@ -50,16 +63,42 @@ export default function CommitteeDashboard() {
     pendingResidents,
     approvedResidents,
     blockInfo,
-    updateNamazTimings,
+    updateNamazTiming,
+    allDues,
+    events,
+    documents,
+    activeAlert,
+    polls,
+    pollVotes,
+    confirmDue,
+    createEvent,
+    deleteEvent,
+    uploadDocument,
+    deleteDocument,
+    createAlert,
+    dismissAlert,
+    createPoll,
+    closePoll,
     signOutAll,
     refreshBlockData,
   } = useApp()
-  const [timingsDraft, setTimingsDraft] = useState(blockInfo?.namaz_timings ?? '')
+  const [tab, setTab] = useState<(typeof TABS)[number]['key']>('overview')
+  const [prayerDraft, setPrayerDraft] = useState<Record<string, string>>({})
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [docTitle, setDocTitle] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
-    setTimingsDraft(blockInfo?.namaz_timings ?? '')
+    if (blockInfo) {
+      setPrayerDraft({
+        fajr: blockInfo.namaz_fajr,
+        zuhr: blockInfo.namaz_zuhr,
+        asr: blockInfo.namaz_asr,
+        maghrib: blockInfo.namaz_maghrib,
+        isha: blockInfo.namaz_isha,
+      })
+    }
   }, [blockInfo])
-  const [tab, setTab] = useState<(typeof TABS)[number]['key']>('overview')
 
   async function approveResident(id: string) {
     const { error } = await supabase.from('profiles').update({ approved: true }).eq('id', id)
@@ -119,6 +158,63 @@ export default function CommitteeDashboard() {
   async function replyComplaint(id: string, reply: string, status: string) {
     await supabase.from('complaints').update({ committee_reply: reply, status }).eq('id', id)
     refreshBlockData()
+  }
+
+  async function savePrayerTimes() {
+    for (const p of PRAYERS) {
+      await updateNamazTiming(`namaz_${p}` as any, prayerDraft[p] ?? '')
+    }
+    toast.success(t(lang, 'submit'))
+  }
+
+  async function handleCreateEvent(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const title = (form.elements.namedItem('title') as HTMLInputElement).value
+    const description = (form.elements.namedItem('description') as HTMLTextAreaElement).value
+    const date = (form.elements.namedItem('date') as HTMLInputElement).value
+    await createEvent(title, description, date)
+    form.reset()
+  }
+
+  async function handleUploadDocument(e: React.FormEvent) {
+    e.preventDefault()
+    const file = fileInputRef.current?.files?.[0]
+    if (!file || !docTitle) return
+    setUploading(true)
+    try {
+      await uploadDocument(docTitle, file)
+      toast.success(t(lang, 'submit'))
+      setDocTitle('')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    } catch (err: any) {
+      toast.error(err.message ?? 'Upload failed')
+    }
+    setUploading(false)
+  }
+
+  async function handleCreateAlert(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const title = (form.elements.namedItem('title') as HTMLInputElement).value
+    const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
+    await createAlert(title, message)
+    form.reset()
+    toast.success(t(lang, 'sendAlert'))
+  }
+
+  async function handleCreatePoll(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const question = (form.elements.namedItem('question') as HTMLInputElement).value
+    const optionsRaw = (form.elements.namedItem('options') as HTMLTextAreaElement).value
+    const options = optionsRaw.split('\n').map((o) => o.trim()).filter(Boolean)
+    if (options.length < 2) {
+      toast.error('Add at least 2 options')
+      return
+    }
+    await createPoll(question, options)
+    form.reset()
   }
 
   return (
@@ -281,18 +377,162 @@ export default function CommitteeDashboard() {
         {tab === 'namazTimings' && (
           <div className="bg-white border border-sand-200 border-l-4 border-l-purple-400 rounded-xl p-4 grid gap-3">
             <p className="text-forest-900 font-medium">{blockInfo?.namaz_venue ?? 'Masjid Ayesha'}</p>
-            <textarea
-              value={timingsDraft}
-              onChange={(e) => setTimingsDraft(e.target.value)}
-              placeholder="Fajr 5:15 AM · Zuhr 1:30 PM · Asr 5:00 PM · Maghrib sunset · Isha 8:15 PM"
-              className="border border-sand-200 rounded-lg px-3 py-2 text-sm min-h-[70px]"
-            />
-            <button
-              onClick={() => updateNamazTimings(timingsDraft)}
-              className="bg-forest-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-forest-700 transition"
-            >
+            <div className="grid grid-cols-2 gap-2">
+              {PRAYERS.map((p) => (
+                <label key={p} className="grid gap-1 text-xs">
+                  <span className="text-purple-800 font-medium">{t(lang, p)}</span>
+                  <input
+                    value={prayerDraft[p] ?? ''}
+                    onChange={(e) => setPrayerDraft((prev) => ({ ...prev, [p]: e.target.value }))}
+                    placeholder="e.g. 5:15 AM"
+                    className="border border-sand-200 rounded-lg px-2 py-1.5 text-sm"
+                  />
+                </label>
+              ))}
+            </div>
+            <button onClick={savePrayerTimes} className="bg-forest-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-forest-700 transition">
               {t(lang, 'submit')}
             </button>
+          </div>
+        )}
+
+        {tab === 'dues' && (
+          <div className="grid gap-2">
+            {allDues.length ? (
+              allDues.map((d) => (
+                <div key={d.id} className="bg-white border border-sand-200 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-forest-900">{d.month}</p>
+                    <p className="text-xs text-forest-500">
+                      {t(lang, 'amount')}: {d.amount} {d.proof_note ? `· ${d.proof_note}` : ''}
+                    </p>
+                  </div>
+                  {d.status === 'confirmed' ? (
+                    <span className="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">{t(lang, 'duesConfirmed')}</span>
+                  ) : (
+                    <button
+                      onClick={() => confirmDue(d.id)}
+                      className="text-xs px-3 py-1 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200 transition"
+                    >
+                      {t(lang, 'confirm')}
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <Empty lang={lang} />
+            )}
+          </div>
+        )}
+
+        {tab === 'events' && (
+          <div className="grid gap-4">
+            <form onSubmit={handleCreateEvent} className="bg-white border border-sand-200 rounded-xl p-4 grid gap-2">
+              <input name="title" required placeholder={t(lang, 'subject')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
+              <input name="date" required type="date" className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
+              <textarea name="description" placeholder={t(lang, 'description')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
+              <button className="bg-forest-600 text-white rounded-lg py-2 text-sm font-medium">{t(lang, 'newEvent')}</button>
+            </form>
+            {events.map((ev) => (
+              <div key={ev.id} className="bg-white border border-sand-200 border-l-4 border-l-indigo-400 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-medium text-forest-900">{ev.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-indigo-700 bg-indigo-100 rounded-full px-2 py-0.5">{ev.event_date}</span>
+                    <button onClick={() => deleteEvent(ev.id)} className="text-red-600">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+                {ev.description && <p className="text-sm text-forest-700">{ev.description}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'documents' && (
+          <div className="grid gap-4">
+            <form onSubmit={handleUploadDocument} className="bg-white border border-sand-200 rounded-xl p-4 grid gap-2">
+              <input
+                required
+                placeholder={t(lang, 'documentTitle')}
+                value={docTitle}
+                onChange={(e) => setDocTitle(e.target.value)}
+                className="border border-sand-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <input ref={fileInputRef} required type="file" accept="application/pdf" className="text-sm" />
+              <button disabled={uploading} className="flex items-center justify-center gap-2 bg-forest-600 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50">
+                <Upload size={14} /> {uploading ? '…' : t(lang, 'uploadDocument')}
+              </button>
+            </form>
+            {documents.map((doc) => (
+              <div key={doc.id} className="bg-white border border-sand-200 border-l-4 border-l-orange-400 rounded-xl p-4 flex items-center justify-between">
+                <a href={doc.file_url} target="_blank" rel="noreferrer" className="text-sm font-medium text-forest-900 underline">
+                  {doc.title}
+                </a>
+                <button onClick={() => deleteDocument(doc.id, doc.file_url)} className="text-red-600">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'alerts' && (
+          <div className="grid gap-4">
+            <form onSubmit={handleCreateAlert} className="bg-white border border-sand-200 rounded-xl p-4 grid gap-2">
+              <input name="title" required placeholder={t(lang, 'alertTitle')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
+              <textarea name="message" required placeholder={t(lang, 'alertMessage')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
+              <button className="flex items-center justify-center gap-2 bg-rose-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-rose-700 transition">
+                <AlertTriangle size={14} /> {t(lang, 'sendAlert')}
+              </button>
+            </form>
+            {activeAlert && (
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-rose-900 text-sm">{activeAlert.title}</p>
+                  <p className="text-xs text-rose-700">{activeAlert.message}</p>
+                </div>
+                <button onClick={() => dismissAlert(activeAlert.id)} className="text-xs text-rose-700 underline">
+                  {t(lang, 'dismiss')}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'polls' && (
+          <div className="grid gap-4">
+            <form onSubmit={handleCreatePoll} className="bg-white border border-sand-200 rounded-xl p-4 grid gap-2">
+              <input name="question" required placeholder={t(lang, 'question')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
+              <textarea name="options" required placeholder={t(lang, 'options')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm min-h-[80px]" />
+              <button className="bg-forest-600 text-white rounded-lg py-2 text-sm font-medium">{t(lang, 'newPoll')}</button>
+            </form>
+            {polls.map((p) => {
+              const votesForPoll = pollVotes.filter((v) => v.poll_id === p.id)
+              return (
+                <div key={p.id} className="bg-white border border-sand-200 border-l-4 border-l-cyan-400 rounded-xl p-4 grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-forest-900">{p.question}</h3>
+                    {p.closed && <span className="text-xs bg-sand-100 text-forest-600 rounded-full px-2 py-0.5">{t(lang, 'pollClosed')}</span>}
+                  </div>
+                  {p.options.map((opt, i) => {
+                    const count = votesForPoll.filter((v) => v.option_index === i).length
+                    return (
+                      <div key={i} className="flex items-center justify-between text-sm text-forest-700 bg-sand-50 rounded-lg px-3 py-1.5">
+                        <span>{opt}</span>
+                        <span className="text-xs text-forest-500">{count} {t(lang, 'votes')}</span>
+                      </div>
+                    )
+                  })}
+                  {!p.closed && (
+                    <button onClick={() => closePoll(p.id)} className="text-xs text-rose-600 underline justify-self-start">
+                      {t(lang, 'closePoll')}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
 

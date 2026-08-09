@@ -1,5 +1,21 @@
 import { useState } from 'react'
-import { Pin, LogOut, Send, Bell, Newspaper, Activity, Moon, MessageSquareWarning } from 'lucide-react'
+import {
+  Pin,
+  LogOut,
+  Send,
+  Bell,
+  Newspaper,
+  Activity,
+  Moon,
+  MessageSquareWarning,
+  Wallet,
+  CalendarDays,
+  FileText,
+  Vote,
+  AlertTriangle,
+  X,
+  Download,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
 import { t } from '../translations'
@@ -13,14 +29,47 @@ const TILES = [
   { key: 'liveStatus', icon: Activity, bg: 'bg-amber-100', fg: 'text-amber-700' },
   { key: 'namazTimings', icon: Moon, bg: 'bg-purple-100', fg: 'text-purple-700' },
   { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700' },
+  { key: 'dues', icon: Wallet, bg: 'bg-emerald-100', fg: 'text-emerald-700' },
+  { key: 'events', icon: CalendarDays, bg: 'bg-indigo-100', fg: 'text-indigo-700' },
+  { key: 'documents', icon: FileText, bg: 'bg-orange-100', fg: 'text-orange-700' },
+  { key: 'polls', icon: Vote, bg: 'bg-cyan-100', fg: 'text-cyan-700' },
 ] as const
 
+function currentMonthKey() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 export default function ResidentDashboard() {
-  const { lang, profile, selectedBlock, notices, news, liveStatus, complaints, blockInfo, signOutAll, refreshBlockData } = useApp()
+  const {
+    lang,
+    profile,
+    selectedBlock,
+    notices,
+    news,
+    liveStatus,
+    complaints,
+    blockInfo,
+    dues,
+    events,
+    documents,
+    activeAlert,
+    polls,
+    pollVotes,
+    markDuePaid,
+    createEvent: _createEvent,
+    votePoll,
+    dismissAlert,
+    signOutAll,
+    refreshBlockData,
+  } = useApp()
   const [tab, setTab] = useState<(typeof TILES)[number]['key']>('noticeBoard')
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
   const [showRules, setShowRules] = useState(false)
+  const [proofNote, setProofNote] = useState('')
+  const [amount, setAmount] = useState('')
+  const [alertDismissed, setAlertDismissed] = useState(false)
 
   async function submitComplaint(e: React.FormEvent) {
     e.preventDefault()
@@ -41,6 +90,14 @@ export default function ResidentDashboard() {
     refreshBlockData()
   }
 
+  async function handleMarkPaid(e: React.FormEvent) {
+    e.preventDefault()
+    await markDuePaid(currentMonthKey(), Number(amount) || 0, proofNote)
+    toast.success(t(lang, 'markPaid'))
+    setProofNote('')
+    setAmount('')
+  }
+
   if (profile && !profile.approved) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-sand-50 px-6 text-center">
@@ -55,9 +112,30 @@ export default function ResidentDashboard() {
   }
 
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
+  const currentMonthDue = dues.find((d) => d.month === currentMonthKey())
+  const activePolls = polls.filter((p) => !p.closed)
 
   return (
     <div className="min-h-screen bg-sand-50">
+      {activeAlert && !alertDismissed && (
+        <div className="bg-rose-600 text-white px-4 py-3 flex items-start gap-3">
+          <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium text-sm">{activeAlert.title}</p>
+            <p className="text-xs text-rose-50 mt-0.5">{activeAlert.message}</p>
+          </div>
+          <button
+            onClick={() => {
+              setAlertDismissed(true)
+              dismissAlert(activeAlert.id)
+            }}
+            aria-label={t(lang, 'dismiss')}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <header
         className="relative bg-cover bg-center px-5 pt-5 pb-4 sticky top-0 z-10"
         style={{ backgroundImage: "url('/building-secondary.jpg')" }}
@@ -154,12 +232,17 @@ export default function ResidentDashboard() {
 
         {tab === 'namazTimings' && (
           <div className="bg-white border border-sand-200 border-l-4 border-l-purple-400 rounded-xl p-4">
-            <p className="text-forest-900 font-medium">{blockInfo?.namaz_venue}</p>
-            {blockInfo?.namaz_timings ? (
-              <p className="text-sm text-forest-700 mt-2">{blockInfo.namaz_timings}</p>
-            ) : (
-              <p className="text-sm text-forest-400 mt-2">{t(lang, 'noData')}</p>
-            )}
+            <p className="text-forest-900 font-medium mb-3">{blockInfo?.namaz_venue}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(['fajr', 'zuhr', 'asr', 'maghrib', 'isha'] as const).map((prayer) => (
+                <div key={prayer} className="bg-purple-50 rounded-lg px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-purple-800 font-medium">{t(lang, prayer)}</span>
+                  <span className="text-xs text-forest-700">
+                    {blockInfo?.[`namaz_${prayer}` as keyof typeof blockInfo] || '—'}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -197,6 +280,121 @@ export default function ResidentDashboard() {
                 {c.committee_reply && <p className="text-xs text-forest-500 mt-2 italic">{c.committee_reply}</p>}
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'dues' && (
+          <div className="grid gap-4">
+            <div className="bg-white border border-sand-200 border-l-4 border-l-emerald-400 rounded-xl p-4">
+              <p className="text-xs text-forest-500 mb-1">{currentMonthKey()}</p>
+              {!currentMonthDue && (
+                <form onSubmit={handleMarkPaid} className="grid gap-3 mt-2">
+                  <input
+                    required
+                    type="number"
+                    placeholder={t(lang, 'amount')}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="border border-sand-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder={t(lang, 'paymentProof')}
+                    value={proofNote}
+                    onChange={(e) => setProofNote(e.target.value)}
+                    className="border border-sand-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                  <button className="bg-emerald-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-emerald-700 transition">
+                    {t(lang, 'markPaid')}
+                  </button>
+                </form>
+              )}
+              {currentMonthDue && (
+                <p className="text-sm font-medium text-forest-800">
+                  {currentMonthDue.status === 'confirmed' ? t(lang, 'duesConfirmed') : t(lang, 'duesMarkedPaid')}
+                </p>
+              )}
+            </div>
+
+            {dues.map((d) => (
+              <div key={d.id} className="bg-white border border-sand-200 rounded-xl p-4 flex items-center justify-between">
+                <span className="text-sm font-medium text-forest-900">{d.month}</span>
+                <span
+                  className={`text-xs px-3 py-1 rounded-full ${
+                    d.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'
+                  }`}
+                >
+                  {d.status === 'confirmed' ? t(lang, 'duesConfirmed') : d.status === 'marked_paid' ? t(lang, 'duesMarkedPaid') : t(lang, 'duesPending')}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'events' &&
+          (events.length ? (
+            events.map((ev) => (
+              <div key={ev.id} className="bg-white border border-sand-200 border-l-4 border-l-indigo-400 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-medium text-forest-900">{ev.title}</h3>
+                  <span className="text-xs text-indigo-700 bg-indigo-100 rounded-full px-2 py-0.5">{ev.event_date}</span>
+                </div>
+                {ev.description && <p className="text-sm text-forest-700">{ev.description}</p>}
+              </div>
+            ))
+          ) : (
+            <Empty lang={lang} />
+          ))}
+
+        {tab === 'documents' &&
+          (documents.length ? (
+            documents.map((doc) => (
+              <a
+                key={doc.id}
+                href={doc.file_url}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-white border border-sand-200 border-l-4 border-l-orange-400 rounded-xl p-4 flex items-center justify-between hover:shadow-sm transition"
+              >
+                <span className="text-sm font-medium text-forest-900">{doc.title}</span>
+                <Download size={16} className="text-orange-600" />
+              </a>
+            ))
+          ) : (
+            <Empty lang={lang} />
+          ))}
+
+        {tab === 'polls' && (
+          <div className="grid gap-4">
+            {activePolls.length ? (
+              activePolls.map((p) => {
+                const myVote = pollVotes.find((v) => v.poll_id === p.id && v.resident_id === profile?.id)
+                const votesForPoll = pollVotes.filter((v) => v.poll_id === p.id)
+                return (
+                  <div key={p.id} className="bg-white border border-sand-200 border-l-4 border-l-cyan-400 rounded-xl p-4 grid gap-2">
+                    <h3 className="font-medium text-forest-900">{p.question}</h3>
+                    {p.options.map((opt, i) => {
+                      const count = votesForPoll.filter((v) => v.option_index === i).length
+                      return (
+                        <button
+                          key={i}
+                          disabled={!!myVote}
+                          onClick={() => votePoll(p.id, i)}
+                          className={`text-left text-sm rounded-lg px-3 py-2 border transition ${
+                            myVote?.option_index === i
+                              ? 'border-cyan-500 bg-cyan-50 text-cyan-800'
+                              : 'border-sand-200 hover:bg-sand-50 text-forest-800'
+                          } ${myVote ? 'cursor-default' : 'cursor-pointer'}`}
+                        >
+                          {opt} {myVote && <span className="text-xs text-forest-400">· {count} {t(lang, 'votes')}</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )
+              })
+            ) : (
+              <Empty lang={lang} />
+            )}
           </div>
         )}
       </main>
