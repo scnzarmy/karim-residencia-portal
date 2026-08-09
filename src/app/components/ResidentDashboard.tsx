@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   X,
   Download,
+  Inbox,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
@@ -136,12 +137,8 @@ export default function ResidentDashboard() {
         </div>
       )}
 
-      <header
-        className="relative bg-cover bg-center px-5 pt-5 pb-4 sticky top-0 z-10"
-        style={{ backgroundImage: "url('/building-secondary.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-forest-900/85 to-forest-800/90" />
-        <div className="relative">
+      <header className="bg-gradient-to-r from-forest-800 to-forest-700 px-5 pt-5 pb-4 sticky top-0 z-10">
+        <div>
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs text-white/70">{selectedBlock ? `${t(lang, 'appName')} · ${selectedBlock}` : ''}</p>
@@ -159,19 +156,19 @@ export default function ResidentDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {TILES.map(({ key, icon: Icon, bg, fg }) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`flex flex-col items-center gap-1.5 rounded-xl py-2.5 transition ${
-                  tab === key ? 'bg-white ring-2 ring-offset-1 ring-white/60' : 'bg-white/15 backdrop-blur hover:bg-white/25'
+                className={`flex items-center gap-2 rounded-xl py-2.5 px-3 transition ${
+                  tab === key ? 'bg-white' : 'bg-white/15 backdrop-blur hover:bg-white/25'
                 }`}
               >
-                <span className={`${tab === key ? `${bg} ${fg}` : 'bg-white/20 text-white'} rounded-lg p-2`}>
-                  <Icon size={16} />
+                <span className={`${tab === key ? `${bg} ${fg}` : 'bg-white/20 text-white'} rounded-lg p-1.5 shrink-0`}>
+                  <Icon size={15} />
                 </span>
-                <span className={`text-[10px] text-center leading-tight px-0.5 ${tab === key ? 'text-forest-700' : 'text-white/90'}`}>
+                <span className={`text-xs text-left leading-tight ${tab === key ? 'text-forest-700 font-medium' : 'text-white/90'}`}>
                   {t(lang, key)}
                 </span>
               </button>
@@ -180,7 +177,13 @@ export default function ResidentDashboard() {
         </div>
       </header>
 
-      <main className="p-4 max-w-2xl mx-auto grid gap-3">
+      <main
+        className="p-4 max-w-2xl mx-auto grid gap-3 min-h-[calc(100vh-180px)] bg-cover bg-center bg-fixed"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(250,249,246,0.94), rgba(250,249,246,0.94)), url('/building-secondary.jpg')",
+        }}
+      >
         {tab === 'noticeBoard' &&
           (notices.length ? (
             notices.map((n) => (
@@ -406,5 +409,12 @@ export default function ResidentDashboard() {
 }
 
 function Empty({ lang }: { lang: 'en' | 'ur' }) {
-  return <p className="text-center text-sm text-forest-500 py-10">{t(lang, 'noData')}</p>
+  return (
+    <div className="flex flex-col items-center justify-center text-center py-14 px-6 bg-white/70 backdrop-blur border border-dashed border-sand-300 rounded-2xl">
+      <span className="bg-sand-100 text-forest-400 rounded-full p-3 mb-3">
+        <Inbox size={22} />
+      </span>
+      <p className="text-sm text-forest-500">{t(lang, 'noData')}</p>
+    </div>
+  )
 }

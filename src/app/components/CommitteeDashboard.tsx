@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Vote,
   Upload,
+  Inbox,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
@@ -219,12 +220,8 @@ export default function CommitteeDashboard() {
 
   return (
     <div className="min-h-screen bg-sand-50">
-      <header
-        className="relative bg-cover bg-center px-5 pt-5 pb-3 sticky top-0 z-10"
-        style={{ backgroundImage: "url('/building-secondary.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-forest-900/85 to-forest-800/90" />
-        <div className="relative">
+      <header className="bg-gradient-to-r from-forest-800 to-forest-700 px-5 pt-5 pb-3 sticky top-0 z-10">
+        <div>
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs text-white/70">{t(lang, 'committee')}</p>
@@ -254,7 +251,13 @@ export default function CommitteeDashboard() {
         </div>
       </header>
 
-      <main className="p-4 max-w-2xl mx-auto grid gap-4">
+      <main
+        className="p-4 max-w-2xl mx-auto grid gap-4 min-h-[calc(100vh-140px)] bg-cover bg-center bg-fixed"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(250,249,246,0.94), rgba(250,249,246,0.94)), url('/building-secondary.jpg')",
+        }}
+      >
         {tab === 'overview' && (
           <div className="grid grid-cols-3 gap-3">
             <StatCard label={t(lang, 'residentManagement')} value={approvedResidents.length} bg="bg-sky-100" fg="text-sky-700" />
@@ -592,5 +595,12 @@ function StatCard({ label, value, bg, fg }: { label: string; value: number; bg: 
 }
 
 function Empty({ lang }: { lang: 'en' | 'ur' }) {
-  return <p className="text-center text-sm text-forest-500 py-10 col-span-2">{t(lang, 'noData')}</p>
+  return (
+    <div className="col-span-2 flex flex-col items-center justify-center text-center py-14 px-6 bg-white/70 backdrop-blur border border-dashed border-sand-300 rounded-2xl">
+      <span className="bg-sand-100 text-forest-400 rounded-full p-3 mb-3">
+        <Inbox size={22} />
+      </span>
+      <p className="text-sm text-forest-500">{t(lang, 'noData')}</p>
+    </div>
+  )
 }
