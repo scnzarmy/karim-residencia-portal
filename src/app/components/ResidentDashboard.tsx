@@ -288,31 +288,34 @@ export default function ResidentDashboard() {
 
         {tab === 'dues' && (
           <div className="grid gap-4">
-            <div className="bg-white border border-sand-200 border-l-4 border-l-emerald-400 rounded-xl p-4">
-              <p className="text-xs text-forest-500 mb-1">{currentMonthKey()}</p>
+            <div className="bg-gradient-to-br from-forest-900 to-forest-800 rounded-2xl p-5 text-white">
+              <p className="text-white/60 text-xs mb-1">{currentMonthKey()}</p>
+              <p className="font-display text-3xl font-semibold mb-3">
+                {currentMonthDue ? currentMonthDue.amount : (amount || '—')}
+              </p>
               {!currentMonthDue && (
-                <form onSubmit={handleMarkPaid} className="grid gap-3 mt-2">
+                <form onSubmit={handleMarkPaid} className="grid gap-2">
                   <input
                     required
                     type="number"
                     placeholder={t(lang, 'amount')}
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="border border-sand-200 rounded-lg px-3 py-2 text-sm"
+                    className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 outline-none focus:border-white/40"
                   />
                   <input
                     placeholder={t(lang, 'paymentProof')}
                     value={proofNote}
                     onChange={(e) => setProofNote(e.target.value)}
-                    className="border border-sand-200 rounded-lg px-3 py-2 text-sm"
+                    className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 outline-none focus:border-white/40"
                   />
-                  <button className="bg-emerald-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-emerald-700 transition">
+                  <button className="bg-emerald-500 text-white rounded-lg py-2 text-sm font-medium hover:bg-emerald-600 transition">
                     {t(lang, 'markPaid')}
                   </button>
                 </form>
               )}
               {currentMonthDue && (
-                <p className="text-sm font-medium text-forest-800">
+                <p className="text-sm font-medium text-white/90">
                   {currentMonthDue.status === 'confirmed' ? t(lang, 'duesConfirmed') : t(lang, 'duesMarkedPaid')}
                 </p>
               )}

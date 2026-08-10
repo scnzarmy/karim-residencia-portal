@@ -20,6 +20,8 @@ import {
   Vote,
   Upload,
   Inbox,
+  Menu,
+  Building2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
@@ -27,17 +29,17 @@ import { t } from '../translations'
 import { supabase } from '../../lib/supabaseClient'
 
 const TABS = [
-  { key: 'overview', icon: LayoutGrid, bg: 'bg-forest-100', fg: 'text-forest-700' },
-  { key: 'residentManagement', icon: Users, bg: 'bg-sky-100', fg: 'text-sky-700' },
-  { key: 'pendingRequests', icon: UserPlus, bg: 'bg-amber-100', fg: 'text-amber-700' },
-  { key: 'noticeBoard', icon: Bell, bg: 'bg-forest-100', fg: 'text-forest-700' },
-  { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700' },
-  { key: 'liveStatus', icon: Activity, bg: 'bg-purple-100', fg: 'text-purple-700' },
-  { key: 'namazTimings', icon: Moon, bg: 'bg-purple-100', fg: 'text-purple-700' },
-  { key: 'dues', icon: Wallet, bg: 'bg-emerald-100', fg: 'text-emerald-700' },
-  { key: 'events', icon: CalendarDays, bg: 'bg-indigo-100', fg: 'text-indigo-700' },
-  { key: 'documents', icon: FileText, bg: 'bg-orange-100', fg: 'text-orange-700' },
-  { key: 'alerts', icon: AlertTriangle, bg: 'bg-rose-100', fg: 'text-rose-700' },
+  { key: 'overview', icon: LayoutGrid, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-forest-400' },
+  { key: 'residentManagement', icon: Users, bg: 'bg-sky-100', fg: 'text-sky-700', accent: 'border-l-sky-400' },
+  { key: 'pendingRequests', icon: UserPlus, bg: 'bg-amber-100', fg: 'text-amber-700', accent: 'border-l-amber-400' },
+  { key: 'noticeBoard', icon: Bell, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-emerald-400' },
+  { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700', accent: 'border-l-blue-400' },
+  { key: 'liveStatus', icon: Activity, bg: 'bg-purple-100', fg: 'text-purple-700', accent: 'border-l-purple-400' },
+  { key: 'namazTimings', icon: Moon, bg: 'bg-purple-100', fg: 'text-purple-700', accent: 'border-l-violet-400' },
+  { key: 'dues', icon: Wallet, bg: 'bg-emerald-100', fg: 'text-emerald-700', accent: 'border-l-teal-400' },
+  { key: 'events', icon: CalendarDays, bg: 'bg-indigo-100', fg: 'text-indigo-700', accent: 'border-l-indigo-400' },
+  { key: 'documents', icon: FileText, bg: 'bg-orange-100', fg: 'text-orange-700', accent: 'border-l-orange-400' },
+  { key: 'alerts', icon: AlertTriangle, bg: 'bg-rose-100', fg: 'text-rose-700', accent: 'border-l-rose-400' },
   { key: 'polls', icon: Vote, bg: 'bg-cyan-100', fg: 'text-cyan-700' },
   { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700' },
 ] as const
@@ -84,6 +86,7 @@ export default function CommitteeDashboard() {
     refreshBlockData,
   } = useApp()
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('overview')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [prayerDraft, setPrayerDraft] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [docTitle, setDocTitle] = useState('')
@@ -219,49 +222,72 @@ export default function CommitteeDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-sand-50">
-      <header className="bg-gradient-to-r from-forest-800 to-forest-700 px-5 pt-5 pb-3 sticky top-0 z-10">
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-xs text-white/70">{t(lang, 'committee')}</p>
-              <h1 className="font-display text-xl font-semibold text-white">
-                {t(lang, 'appName')} · {selectedBlock}
-              </h1>
-            </div>
-            <button onClick={signOutAll} className="text-white/90" aria-label={t(lang, 'logout')}>
-              <LogOut size={18} />
-            </button>
-          </div>
+    <div className="min-h-screen bg-sand-50 flex">
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
 
-          <div className="grid grid-cols-4 gap-1.5">
-            {TABS.map(({ key, icon: Icon, bg, fg }) => (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className={`flex flex-col items-center gap-1 rounded-xl py-2 px-1 transition ${
-                  tab === key ? 'bg-white shadow-md' : 'bg-white/15 backdrop-blur hover:bg-white/25'
-                }`}
-              >
-                <span className={`${tab === key ? `${bg} ${fg}` : 'bg-white/20 text-white'} rounded-lg p-1.5`}>
-                  <Icon size={14} />
-                </span>
-                <span className={`text-[9px] text-center leading-tight ${tab === key ? 'text-forest-700 font-medium' : 'text-white/90'}`}>
-                  {t(lang, key)}
-                </span>
-              </button>
-            ))}
+      <aside
+        className={`fixed md:static inset-y-0 left-0 z-30 w-64 h-screen bg-forest-950 flex flex-col shrink-0 transform transition-transform duration-200 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0`}
+      >
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+          <span className="bg-forest-600 text-white rounded-lg p-2 shrink-0">
+            <Building2 size={18} />
+          </span>
+          <div className="min-w-0">
+            <p className="font-display text-white text-sm font-semibold leading-tight truncate">{t(lang, 'appName')}</p>
+            <p className="text-white/50 text-[11px]">
+              {t(lang, 'committee')} · {selectedBlock}
+            </p>
           </div>
         </div>
-      </header>
 
-      <main
-        className="p-4 max-w-2xl mx-auto grid gap-4 min-h-[calc(100vh-140px)] bg-cover bg-center bg-fixed"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(250,249,246,0.94), rgba(250,249,246,0.94)), url('/building-secondary.jpg')",
-        }}
-      >
+        <nav className="flex-1 overflow-y-auto py-2">
+          {TABS.map(({ key, icon: Icon, accent }) => (
+            <button
+              key={key}
+              onClick={() => {
+                setTab(key)
+                setSidebarOpen(false)
+              }}
+              className={`w-full flex items-center gap-3 px-5 py-2.5 border-l-4 text-sm transition ${
+                tab === key ? `${accent} bg-white/10 text-white font-medium` : 'border-l-transparent text-white/55 hover:bg-white/5 hover:text-white/90'
+              }`}
+            >
+              <Icon size={16} />
+              {t(lang, key)}
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-white/10">
+          <button onClick={signOutAll} className="flex items-center gap-2 text-white/70 hover:text-white text-sm">
+            <LogOut size={16} />
+            {t(lang, 'logout')}
+          </button>
+        </div>
+      </aside>
+
+      <div className="flex-1 min-w-0">
+        <div className="md:hidden flex items-center justify-between bg-forest-900 px-4 py-3 sticky top-0 z-10">
+          <button onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+            <Menu size={20} className="text-white" />
+          </button>
+          <span className="text-white font-display font-semibold text-sm">
+            {t(lang, 'appName')} · {selectedBlock}
+          </span>
+          <span className="w-5" />
+        </div>
+
+        <main
+          className="p-4 max-w-2xl mx-auto grid gap-4 min-h-screen bg-cover bg-center bg-fixed"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(250,249,246,0.94), rgba(250,249,246,0.94)), url('/building-secondary.jpg')",
+          }}
+        >
         {tab === 'overview' && (
           <div className="grid grid-cols-3 gap-3">
             <StatCard label={t(lang, 'residentManagement')} value={approvedResidents.length} bg="bg-sky-100" fg="text-sky-700" />
@@ -404,7 +430,17 @@ export default function CommitteeDashboard() {
         )}
 
         {tab === 'dues' && (
-          <div className="grid gap-2">
+          <div className="grid gap-3">
+            <div className="bg-gradient-to-br from-forest-900 to-forest-800 rounded-2xl p-5 text-white">
+              <p className="text-white/60 text-xs mb-1">{t(lang, 'duesPending')}</p>
+              <p className="font-display text-3xl font-semibold">
+                {allDues.filter((d) => d.status !== 'confirmed').reduce((sum, d) => sum + Number(d.amount), 0)}
+              </p>
+              <div className="flex gap-4 mt-3 text-xs text-white/70">
+                <span>{allDues.filter((d) => d.status === 'marked_paid').length} {t(lang, 'duesMarkedPaid')}</span>
+                <span>{allDues.filter((d) => d.status === 'confirmed').length} {t(lang, 'duesConfirmed')}</span>
+              </div>
+            </div>
             {allDues.length ? (
               allDues.map((d) => (
                 <div key={d.id} className="bg-white border border-sand-200 rounded-xl p-4 flex items-center justify-between">
@@ -552,7 +588,8 @@ export default function CommitteeDashboard() {
             )}
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
