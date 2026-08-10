@@ -40,8 +40,8 @@ const TABS = [
   { key: 'events', icon: CalendarDays, bg: 'bg-indigo-100', fg: 'text-indigo-700', accent: 'border-l-indigo-400' },
   { key: 'documents', icon: FileText, bg: 'bg-orange-100', fg: 'text-orange-700', accent: 'border-l-orange-400' },
   { key: 'alerts', icon: AlertTriangle, bg: 'bg-rose-100', fg: 'text-rose-700', accent: 'border-l-rose-400' },
-  { key: 'polls', icon: Vote, bg: 'bg-cyan-100', fg: 'text-cyan-700' },
-  { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700' },
+  { key: 'polls', icon: Vote, bg: 'bg-cyan-100', fg: 'text-cyan-700', accent: 'border-l-cyan-400' },
+  { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700', accent: 'border-l-red-400' },
 ] as const
 
 function initials(name: string) {
