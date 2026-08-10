@@ -178,7 +178,7 @@ export default function ResidentDashboard() {
       </header>
 
       <main
-        className="p-4 max-w-2xl mx-auto grid gap-3 min-h-[calc(100vh-180px)] bg-cover bg-center bg-fixed"
+        className="p-4 max-w-2xl mx-auto grid gap-3 content-start min-h-[calc(100vh-180px)] bg-cover bg-center bg-fixed"
         style={{
           backgroundImage:
             "linear-gradient(rgba(250,249,246,0.94), rgba(250,249,246,0.94)), url('/building-secondary.jpg')",

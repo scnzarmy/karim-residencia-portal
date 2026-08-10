@@ -228,7 +228,7 @@ export default function CommitteeDashboard() {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-30 w-64 h-screen bg-forest-950 flex flex-col shrink-0 transform transition-transform duration-200 ${
+        className={`fixed md:static inset-y-0 left-0 z-30 w-64 h-screen bg-forest-900 flex flex-col shrink-0 transform transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0`}
       >
@@ -282,14 +282,14 @@ export default function CommitteeDashboard() {
         </div>
 
         <main
-          className="p-4 max-w-2xl mx-auto grid gap-4 min-h-screen bg-cover bg-center bg-fixed"
+          className="p-4 max-w-2xl mx-auto grid gap-4 content-start min-h-screen bg-cover bg-center bg-fixed"
           style={{
             backgroundImage:
               "linear-gradient(rgba(250,249,246,0.94), rgba(250,249,246,0.94)), url('/building-secondary.jpg')",
           }}
         >
         {tab === 'overview' && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 items-start">
             <StatCard label={t(lang, 'residentManagement')} value={approvedResidents.length} bg="bg-sky-100" fg="text-sky-700" />
             <StatCard label={t(lang, 'pendingRequests')} value={pendingResidents.length} bg="bg-amber-100" fg="text-amber-700" />
             <StatCard label={t(lang, 'noticeBoard')} value={notices.length} bg="bg-forest-100" fg="text-forest-700" />
@@ -297,7 +297,7 @@ export default function CommitteeDashboard() {
         )}
 
         {tab === 'residentManagement' && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 items-start">
             {approvedResidents.length ? (
               approvedResidents.map((r) => (
                 <div key={r.id} className="bg-white border border-sand-200 rounded-xl p-4 flex flex-col items-center text-center gap-2">
