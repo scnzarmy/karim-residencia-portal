@@ -281,18 +281,21 @@ export default function CommitteeDashboard() {
           <span className="w-5" />
         </div>
 
-        <main
-          className="p-4 max-w-2xl mx-auto grid gap-4 content-start min-h-screen bg-cover bg-center bg-fixed"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(250,249,246,0.94), rgba(250,249,246,0.94)), url('/building-secondary.jpg')",
-          }}
-        >
+        <div className="hidden md:flex items-center justify-between bg-white border-b border-sand-200 px-6 py-4">
+          <div>
+            <p className="text-xs text-forest-400">
+              {t(lang, 'committee')} · {selectedBlock}
+            </p>
+            <h1 className="font-display text-lg font-semibold text-forest-900">{t(lang, tab)}</h1>
+          </div>
+        </div>
+
+        <main className="p-4 md:p-6 max-w-3xl mx-auto grid gap-4 content-start">
         {tab === 'overview' && (
           <div className="grid grid-cols-3 gap-3 items-start">
-            <StatCard label={t(lang, 'residentManagement')} value={approvedResidents.length} bg="bg-sky-100" fg="text-sky-700" />
-            <StatCard label={t(lang, 'pendingRequests')} value={pendingResidents.length} bg="bg-amber-100" fg="text-amber-700" />
-            <StatCard label={t(lang, 'noticeBoard')} value={notices.length} bg="bg-forest-100" fg="text-forest-700" />
+            <StatCard label={t(lang, 'residentManagement')} value={approvedResidents.length} bg="bg-sky-50" fg="text-sky-600" />
+            <StatCard label={t(lang, 'pendingRequests')} value={pendingResidents.length} bg="bg-amber-50" fg="text-amber-600" />
+            <StatCard label={t(lang, 'noticeBoard')} value={notices.length} bg="bg-emerald-50" fg="text-emerald-600" />
           </div>
         )}
 
@@ -628,9 +631,11 @@ function ComplaintRow({
 
 function StatCard({ label, value, bg, fg }: { label: string; value: number; bg: string; fg: string }) {
   return (
-    <div className={`${bg} rounded-xl p-4 text-center`}>
-      <p className={`text-2xl font-display font-semibold ${fg}`}>{value}</p>
-      <p className="text-xs text-forest-700 mt-1">{label}</p>
+    <div className="bg-white border border-sand-200 rounded-xl p-4">
+      <span className={`inline-flex items-center justify-center ${bg} ${fg} rounded-lg w-8 h-8 mb-2 text-sm font-semibold`}>
+        {value}
+      </span>
+      <p className="text-xs text-forest-600">{label}</p>
     </div>
   )
 }
