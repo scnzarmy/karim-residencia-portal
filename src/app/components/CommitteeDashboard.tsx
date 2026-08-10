@@ -24,6 +24,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { useApp } from '../context/AppContext'
 import { t } from '../translations'
 import { supabase } from '../../lib/supabaseClient'
@@ -292,10 +293,62 @@ export default function CommitteeDashboard() {
 
         <main className="p-4 md:p-6 max-w-3xl mx-auto grid gap-4 content-start">
         {tab === 'overview' && (
-          <div className="grid grid-cols-3 gap-3 items-start">
-            <StatCard label={t(lang, 'residentManagement')} value={approvedResidents.length} bg="bg-sky-50" fg="text-sky-600" />
-            <StatCard label={t(lang, 'pendingRequests')} value={pendingResidents.length} bg="bg-amber-50" fg="text-amber-600" />
-            <StatCard label={t(lang, 'noticeBoard')} value={notices.length} bg="bg-emerald-50" fg="text-emerald-600" />
+          <div className="grid gap-4">
+            <div className="grid grid-cols-3 gap-3 items-start">
+              <StatCard label={t(lang, 'residentManagement')} value={approvedResidents.length} bg="bg-sky-50" fg="text-sky-600" />
+              <StatCard label={t(lang, 'pendingRequests')} value={pendingResidents.length} bg="bg-amber-50" fg="text-amber-600" />
+              <StatCard label={t(lang, 'noticeBoard')} value={notices.length} bg="bg-emerald-50" fg="text-emerald-600" />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-3">
+              <div className="bg-white border border-sand-200 rounded-xl p-4">
+                <p className="text-sm font-medium text-forest-900 mb-3">{t(lang, 'dues')}</p>
+                {allDues.length ? (
+                  <ResponsiveContainer width="100%" height={180}>
+                    <BarChart
+                      data={[
+                        { name: t(lang, 'duesPending'), count: allDues.filter((d) => d.status === 'pending').length },
+                        { name: t(lang, 'duesMarkedPaid'), count: allDues.filter((d) => d.status === 'marked_paid').length },
+                        { name: t(lang, 'duesConfirmed'), count: allDues.filter((d) => d.status === 'confirmed').length },
+                      ]}
+                    >
+                      <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 10 }} width={24} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#2f684c" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-xs text-forest-400 py-10 text-center">{t(lang, 'noData')}</p>
+                )}
+              </div>
+
+              <div className="bg-white border border-sand-200 rounded-xl p-4">
+                <p className="text-sm font-medium text-forest-900 mb-3">{t(lang, 'residentManagement')}</p>
+                {approvedResidents.length + pendingResidents.length ? (
+                  <ResponsiveContainer width="100%" height={180}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: t(lang, 'residentManagement'), value: approvedResidents.length },
+                          { name: t(lang, 'pendingRequests'), value: pendingResidents.length },
+                        ]}
+                        dataKey="value"
+                        innerRadius={45}
+                        outerRadius={70}
+                        paddingAngle={3}
+                      >
+                        <Cell fill="#0ea5e9" />
+                        <Cell fill="#f59e0b" />
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-xs text-forest-400 py-10 text-center">{t(lang, 'noData')}</p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

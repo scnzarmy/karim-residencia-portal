@@ -18,8 +18,10 @@ import {
   Inbox,
   Menu,
   Building2,
+  LayoutGrid,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useApp } from '../context/AppContext'
 import { t } from '../translations'
 import { supabase } from '../../lib/supabaseClient'
@@ -27,6 +29,7 @@ import ChatBot from './ChatBot'
 import RulesPanel from './RulesPanel'
 
 const TILES = [
+  { key: 'overview', icon: LayoutGrid, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-forest-400' },
   { key: 'noticeBoard', icon: Bell, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-emerald-400' },
   { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700', accent: 'border-l-blue-400' },
   { key: 'liveStatus', icon: Activity, bg: 'bg-amber-100', fg: 'text-amber-700', accent: 'border-l-amber-400' },
@@ -66,7 +69,7 @@ export default function ResidentDashboard() {
     signOutAll,
     refreshBlockData,
   } = useApp()
-  const [tab, setTab] = useState<(typeof TILES)[number]['key']>('noticeBoard')
+  const [tab, setTab] = useState<(typeof TILES)[number]['key']>('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
@@ -207,12 +210,53 @@ export default function ResidentDashboard() {
             <p className="text-xs text-forest-400">{selectedBlock ? `${t(lang, 'appName')} · ${selectedBlock}` : ''}</p>
             <h1 className="font-display text-lg font-semibold text-forest-900">{t(lang, tab)}</h1>
           </div>
-          <button onClick={() => setShowRules(true)} className="text-xs text-forest-600 underline">
-            {t(lang, 'rules')}
-          </button>
         </div>
 
         <main className="p-4 md:p-6 max-w-3xl mx-auto grid gap-3 content-start">
+        {tab === 'overview' && (
+          <div className="grid gap-4">
+            <div className="bg-gradient-to-br from-forest-900 to-forest-800 rounded-2xl p-5 text-white">
+              <p className="text-white/60 text-xs mb-1">{selectedBlock ? `${t(lang, 'appName')} · ${selectedBlock}` : ''}</p>
+              <p className="font-display text-2xl font-semibold">{firstName ? `Hi, ${firstName}` : t(lang, 'appName')}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard label={t(lang, 'noticeBoard')} value={notices.length} bg="bg-emerald-50" fg="text-emerald-600" />
+              <StatCard label={t(lang, 'complaints')} value={complaints.filter((c) => c.status !== 'resolved').length} bg="bg-rose-50" fg="text-rose-600" />
+              <StatCard label={t(lang, 'events')} value={events.length} bg="bg-indigo-50" fg="text-indigo-600" />
+              <StatCard label={t(lang, 'documents')} value={documents.length} bg="bg-orange-50" fg="text-orange-600" />
+            </div>
+
+            <div className="bg-white border border-sand-200 rounded-xl p-4">
+              <p className="text-sm font-medium text-forest-900 mb-3">{t(lang, 'dues')}</p>
+              {dues.length ? (
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: t(lang, 'duesConfirmed'), value: dues.filter((d) => d.status === 'confirmed').length },
+                        { name: t(lang, 'duesMarkedPaid'), value: dues.filter((d) => d.status === 'marked_paid').length },
+                        { name: t(lang, 'duesPending'), value: dues.filter((d) => d.status === 'pending').length || 1 },
+                      ]}
+                      dataKey="value"
+                      innerRadius={45}
+                      outerRadius={70}
+                      paddingAngle={3}
+                    >
+                      <Cell fill="#10b981" />
+                      <Cell fill="#f59e0b" />
+                      <Cell fill="#e5dfd0" />
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-xs text-forest-400 py-10 text-center">{t(lang, 'noData')}</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {tab === 'noticeBoard' &&
           (notices.length ? (
             notices.map((n) => (
@@ -437,6 +481,17 @@ export default function ResidentDashboard() {
         <ChatBot />
         {showRules && <RulesPanel onClose={() => setShowRules(false)} />}
       </div>
+    </div>
+  )
+}
+
+function StatCard({ label, value, bg, fg }: { label: string; value: number; bg: string; fg: string }) {
+  return (
+    <div className="bg-white border border-sand-200 rounded-xl p-4">
+      <span className={`inline-flex items-center justify-center ${bg} ${fg} rounded-lg w-8 h-8 mb-2 text-sm font-semibold`}>
+        {value}
+      </span>
+      <p className="text-xs text-forest-600">{label}</p>
     </div>
   )
 }
