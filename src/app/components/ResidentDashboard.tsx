@@ -19,6 +19,7 @@ import {
   Menu,
   Building2,
   LayoutGrid,
+  User,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
@@ -27,6 +28,7 @@ import { t } from '../translations'
 import { supabase } from '../../lib/supabaseClient'
 import ChatBot from './ChatBot'
 import RulesPanel from './RulesPanel'
+import ProfilePanel from './ProfilePanel'
 
 const TILES = [
   { key: 'overview', icon: LayoutGrid, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-forest-400' },
@@ -72,6 +74,7 @@ export default function ResidentDashboard() {
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
   const [showRules, setShowRules] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
   const [proofNote, setProofNote] = useState('')
   const proofFileRef = useRef<HTMLInputElement>(null)
   const [amount, setAmount] = useState('')
@@ -165,6 +168,10 @@ export default function ResidentDashboard() {
         </nav>
 
         <div className="p-4 border-t border-white/10 grid gap-2">
+          <button onClick={() => setShowProfile(true)} className="flex items-center gap-2 text-white/70 hover:text-white text-sm">
+            <User size={16} />
+            {t(lang, 'editProfile')}
+          </button>
           <button onClick={() => setShowRules(true)} className="flex items-center gap-2 text-white/70 hover:text-white text-sm">
             <FileText size={16} />
             {t(lang, 'rules')}
@@ -466,6 +473,7 @@ export default function ResidentDashboard() {
 
         <ChatBot />
         {showRules && <RulesPanel onClose={() => setShowRules(false)} />}
+        {showProfile && <ProfilePanel onClose={() => setShowProfile(false)} />}
       </div>
     </div>
   )

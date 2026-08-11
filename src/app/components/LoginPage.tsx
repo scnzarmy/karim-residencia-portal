@@ -9,7 +9,7 @@ import { supabase } from '../../lib/supabaseClient'
 export default function LoginPage() {
   const { lang, role, selectedBlock } = useApp()
   const navigate = useNavigate()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [fullName, setFullName] = useState('')
   const [houseNumber, setHouseNumber] = useState('')
   const [email, setEmail] = useState('')
@@ -60,6 +60,21 @@ export default function LoginPage() {
     setMode('login')
   }
 
+  async function handleForgot(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setBusy(false)
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+    toast.success(t(lang, 'resetLinkSent'))
+    setMode('login')
+  }
+
   const isRegister = mode === 'register' && role === 'resident'
 
   return (
@@ -70,7 +85,7 @@ export default function LoginPage() {
             <ArrowLeft size={15} /> {t(lang, 'back')}
           </button>
 
-          {role === 'resident' && (
+          {role === 'resident' && mode !== 'forgot' && (
             <p className="text-sm text-forest-600">
               {mode === 'login' ? (
                 <>
@@ -100,32 +115,56 @@ export default function LoginPage() {
           </div>
 
           <h1 className="font-display text-2xl sm:text-3xl font-semibold text-forest-900 mb-2">
-            {isRegister ? t(lang, 'register') : t(lang, 'login')}
+            {mode === 'forgot' ? t(lang, 'forgotPassword') : isRegister ? t(lang, 'register') : t(lang, 'login')}
           </h1>
           <p className="text-sm text-forest-500 mb-8">
-            {isRegister
-              ? `${t(lang, 'appName')} — Block ${selectedBlock}`
-              : `${t(lang, 'appName')} · ${role === 'committee' ? t(lang, 'committee') : t(lang, 'resident')} · Block ${selectedBlock}`}
+            {mode === 'forgot'
+              ? t(lang, 'forgotPasswordHint')
+              : isRegister
+                ? `${t(lang, 'appName')} — Block ${selectedBlock}`
+                : `${t(lang, 'appName')} · ${role === 'committee' ? t(lang, 'committee') : t(lang, 'resident')} · Block ${selectedBlock}`}
           </p>
 
-          <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="grid gap-4">
-            {isRegister && (
-              <div className="grid grid-cols-2 gap-3">
-                <Field label={t(lang, 'fullName')} value={fullName} onChange={setFullName} required />
-                <Field label={t(lang, 'houseNumber')} value={houseNumber} onChange={setHouseNumber} required />
-              </div>
-            )}
-            <Field label={t(lang, 'email')} type="email" value={email} onChange={setEmail} required />
-            <Field label={t(lang, 'password')} type="password" value={password} onChange={setPassword} required />
+          {mode === 'forgot' ? (
+            <form onSubmit={handleForgot} className="grid gap-4">
+              <Field label={t(lang, 'email')} type="email" value={email} onChange={setEmail} required />
+              <button
+                type="submit"
+                disabled={busy}
+                className="mt-2 bg-forest-700 text-white rounded-lg py-2.5 font-medium hover:bg-forest-800 transition disabled:opacity-50"
+              >
+                {t(lang, 'sendResetLink')}
+              </button>
+              <button type="button" onClick={() => setMode('login')} className="text-sm text-forest-600 underline justify-self-start">
+                {t(lang, 'back')}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="grid gap-4">
+              {isRegister && (
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label={t(lang, 'fullName')} value={fullName} onChange={setFullName} required />
+                  <Field label={t(lang, 'houseNumber')} value={houseNumber} onChange={setHouseNumber} required />
+                </div>
+              )}
+              <Field label={t(lang, 'email')} type="email" value={email} onChange={setEmail} required />
+              <Field label={t(lang, 'password')} type="password" value={password} onChange={setPassword} required />
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="mt-2 bg-forest-700 text-white rounded-lg py-2.5 font-medium hover:bg-forest-800 transition disabled:opacity-50"
-            >
-              {mode === 'login' ? t(lang, 'login') : t(lang, 'register')}
-            </button>
-          </form>
+              {mode === 'login' && (
+                <button type="button" onClick={() => setMode('forgot')} className="text-xs text-forest-500 underline justify-self-end -mt-2">
+                  {t(lang, 'forgotPassword')}
+                </button>
+              )}
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="mt-2 bg-forest-700 text-white rounded-lg py-2.5 font-medium hover:bg-forest-800 transition disabled:opacity-50"
+              >
+                {mode === 'login' ? t(lang, 'login') : t(lang, 'register')}
+              </button>
+            </form>
+          )}
         </div>
 
         <p className="text-xs text-forest-400 text-center lg:text-left">{t(lang, 'appName')}</p>

@@ -152,6 +152,7 @@ interface AppState {
   closePoll: (id: string) => Promise<void>
   refreshBlockData: () => Promise<void>
   signOutAll: () => Promise<void>
+  updateProfile: (fullName: string, houseNumber: string) => Promise<void>
 }
 
 const AppContext = createContext<AppState | undefined>(undefined)
@@ -390,6 +391,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshBlockData()
   }
 
+  async function updateProfile(fullName: string, houseNumber: string) {
+    if (!profile) return
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: fullName, house_number: houseNumber })
+      .eq('id', profile.id)
+    if (!error) {
+      setProfile({ ...profile, full_name: fullName, house_number: houseNumber })
+    }
+  }
+
   async function signOutAll() {
     await supabase.auth.signOut()
     setProfile(null)
@@ -446,6 +458,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       closePoll,
       refreshBlockData,
       signOutAll,
+      updateProfile,
     }),
     [
       lang,
