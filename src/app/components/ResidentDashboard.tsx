@@ -31,13 +31,11 @@ import RulesPanel from './RulesPanel'
 const TILES = [
   { key: 'overview', icon: LayoutGrid, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-forest-400' },
   { key: 'noticeBoard', icon: Bell, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-emerald-400' },
-  { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700', accent: 'border-l-blue-400' },
   { key: 'liveStatus', icon: Activity, bg: 'bg-amber-100', fg: 'text-amber-700', accent: 'border-l-amber-400' },
   { key: 'namazTimings', icon: Moon, bg: 'bg-purple-100', fg: 'text-purple-700', accent: 'border-l-violet-400' },
   { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700', accent: 'border-l-red-400' },
   { key: 'dues', icon: Wallet, bg: 'bg-emerald-100', fg: 'text-emerald-700', accent: 'border-l-teal-400' },
   { key: 'events', icon: CalendarDays, bg: 'bg-indigo-100', fg: 'text-indigo-700', accent: 'border-l-indigo-400' },
-  { key: 'documents', icon: FileText, bg: 'bg-orange-100', fg: 'text-orange-700', accent: 'border-l-orange-400' },
   { key: 'polls', icon: Vote, bg: 'bg-cyan-100', fg: 'text-cyan-700', accent: 'border-l-cyan-400' },
 ] as const
 
@@ -132,7 +130,7 @@ export default function ResidentDashboard() {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-30 w-64 h-screen bg-forest-900 flex flex-col shrink-0 transform transition-transform duration-200 ${
+        className={`fixed md:sticky inset-y-0 md:inset-y-auto md:top-0 left-0 z-30 w-64 h-screen bg-forest-900 flex flex-col shrink-0 transform transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0`}
       >
@@ -223,11 +221,10 @@ export default function ResidentDashboard() {
               <p className="font-display text-2xl font-semibold">{firstName ? `Hi, ${firstName}` : t(lang, 'appName')}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <StatCard label={t(lang, 'noticeBoard')} value={notices.length} bg="bg-emerald-50" fg="text-emerald-600" />
               <StatCard label={t(lang, 'complaints')} value={complaints.filter((c) => c.status !== 'resolved').length} bg="bg-rose-50" fg="text-rose-600" />
               <StatCard label={t(lang, 'events')} value={events.length} bg="bg-indigo-50" fg="text-indigo-600" />
-              <StatCard label={t(lang, 'documents')} value={documents.length} bg="bg-orange-50" fg="text-orange-600" />
             </div>
 
             <div className="bg-white border border-sand-200 rounded-xl p-4">
@@ -268,18 +265,6 @@ export default function ResidentDashboard() {
                   {n.pinned && <Pin size={14} className="text-forest-600" />}
                   <h3 className="font-medium text-forest-900">{n.title}</h3>
                 </div>
-                <p className="text-sm text-forest-700">{n.body}</p>
-              </div>
-            ))
-          ) : (
-            <Empty lang={lang} />
-          ))}
-
-        {tab === 'newsUpdates' &&
-          (news.length ? (
-            news.map((n) => (
-              <div key={n.id} className="bg-white border border-sand-200 border-l-4 border-l-sky-400 rounded-xl p-4">
-                <h3 className="font-medium text-forest-900 mb-1">{n.title}</h3>
                 <p className="text-sm text-forest-700">{n.body}</p>
               </div>
             ))
@@ -438,24 +423,6 @@ export default function ResidentDashboard() {
                 </div>
                 {ev.description && <p className="text-sm text-forest-700">{ev.description}</p>}
               </div>
-            ))
-          ) : (
-            <Empty lang={lang} />
-          ))}
-
-        {tab === 'documents' &&
-          (documents.length ? (
-            documents.map((doc) => (
-              <a
-                key={doc.id}
-                href={doc.file_url}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-white border border-sand-200 border-l-4 border-l-orange-400 rounded-xl p-4 flex items-center justify-between hover:shadow-sm transition"
-              >
-                <span className="text-sm font-medium text-forest-900">{doc.title}</span>
-                <Download size={16} className="text-orange-600" />
-              </a>
             ))
           ) : (
             <Empty lang={lang} />

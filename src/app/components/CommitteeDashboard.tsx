@@ -32,14 +32,11 @@ import { supabase } from '../../lib/supabaseClient'
 const TABS = [
   { key: 'overview', icon: LayoutGrid, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-forest-400' },
   { key: 'residentManagement', icon: Users, bg: 'bg-sky-100', fg: 'text-sky-700', accent: 'border-l-sky-400' },
-  { key: 'pendingRequests', icon: UserPlus, bg: 'bg-amber-100', fg: 'text-amber-700', accent: 'border-l-amber-400' },
   { key: 'noticeBoard', icon: Bell, bg: 'bg-forest-100', fg: 'text-forest-700', accent: 'border-l-emerald-400' },
-  { key: 'newsUpdates', icon: Newspaper, bg: 'bg-sky-100', fg: 'text-sky-700', accent: 'border-l-blue-400' },
   { key: 'liveStatus', icon: Activity, bg: 'bg-purple-100', fg: 'text-purple-700', accent: 'border-l-purple-400' },
   { key: 'namazTimings', icon: Moon, bg: 'bg-purple-100', fg: 'text-purple-700', accent: 'border-l-violet-400' },
   { key: 'dues', icon: Wallet, bg: 'bg-emerald-100', fg: 'text-emerald-700', accent: 'border-l-teal-400' },
   { key: 'events', icon: CalendarDays, bg: 'bg-indigo-100', fg: 'text-indigo-700', accent: 'border-l-indigo-400' },
-  { key: 'documents', icon: FileText, bg: 'bg-orange-100', fg: 'text-orange-700', accent: 'border-l-orange-400' },
   { key: 'alerts', icon: AlertTriangle, bg: 'bg-rose-100', fg: 'text-rose-700', accent: 'border-l-rose-400' },
   { key: 'polls', icon: Vote, bg: 'bg-cyan-100', fg: 'text-cyan-700', accent: 'border-l-cyan-400' },
   { key: 'complaints', icon: MessageSquareWarning, bg: 'bg-rose-100', fg: 'text-rose-700', accent: 'border-l-red-400' },
@@ -88,6 +85,7 @@ export default function CommitteeDashboard() {
   } = useApp()
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [residentSubTab, setResidentSubTab] = useState<'all' | 'pending'>('all')
   const [prayerDraft, setPrayerDraft] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [docTitle, setDocTitle] = useState('')
@@ -229,7 +227,7 @@ export default function CommitteeDashboard() {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-30 w-64 h-screen bg-forest-900 flex flex-col shrink-0 transform transition-transform duration-200 ${
+        className={`fixed md:sticky inset-y-0 md:inset-y-auto md:top-0 left-0 z-30 w-64 h-screen bg-forest-900 flex flex-col shrink-0 transform transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0`}
       >
@@ -353,54 +351,82 @@ export default function CommitteeDashboard() {
         )}
 
         {tab === 'residentManagement' && (
-          <div className="grid grid-cols-2 gap-3 items-start">
-            {approvedResidents.length ? (
-              approvedResidents.map((r) => (
-                <div key={r.id} className="bg-white border border-sand-200 rounded-xl p-4 flex flex-col items-center text-center gap-2">
-                  <span className="bg-sky-100 text-sky-700 rounded-full w-11 h-11 flex items-center justify-center font-medium text-sm">
-                    {initials(r.full_name)}
+          <div className="grid gap-3">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setResidentSubTab('all')}
+                className={`text-xs px-3 py-1.5 rounded-full transition ${
+                  residentSubTab === 'all' ? 'bg-forest-600 text-white' : 'bg-white border border-sand-200 text-forest-600'
+                }`}
+              >
+                {t(lang, 'residentManagement')}
+              </button>
+              <button
+                onClick={() => setResidentSubTab('pending')}
+                className={`text-xs px-3 py-1.5 rounded-full transition flex items-center gap-1.5 ${
+                  residentSubTab === 'pending' ? 'bg-forest-600 text-white' : 'bg-white border border-sand-200 text-forest-600'
+                }`}
+              >
+                {t(lang, 'pendingRequests')}
+                {pendingResidents.length > 0 && (
+                  <span className={`text-[10px] rounded-full px-1.5 ${residentSubTab === 'pending' ? 'bg-white/20' : 'bg-amber-100 text-amber-700'}`}>
+                    {pendingResidents.length}
                   </span>
-                  <div>
-                    <p className="font-medium text-forest-900 text-sm">{r.full_name}</p>
-                    <p className="text-xs text-forest-500">{r.house_number}</p>
-                  </div>
-                  <button onClick={() => removeResident(r.id)} className="text-red-600">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <Empty lang={lang} />
-            )}
-          </div>
-        )}
+                )}
+              </button>
+            </div>
 
-        {tab === 'pendingRequests' && (
-          <div className="grid gap-2">
-            {pendingResidents.length ? (
-              pendingResidents.map((r) => (
-                <div key={r.id} className="bg-white border border-sand-200 rounded-xl p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="bg-amber-100 text-amber-700 rounded-full w-9 h-9 flex items-center justify-center font-medium text-xs">
-                      {initials(r.full_name)}
-                    </span>
-                    <div>
-                      <p className="font-medium text-forest-900 text-sm">{r.full_name}</p>
-                      <p className="text-xs text-forest-500">{r.house_number}</p>
+            {residentSubTab === 'all' && (
+              <div className="grid grid-cols-2 gap-3 items-start">
+                {approvedResidents.length ? (
+                  approvedResidents.map((r) => (
+                    <div key={r.id} className="bg-white border border-sand-200 rounded-xl p-4 flex flex-col items-center text-center gap-2">
+                      <span className="bg-sky-100 text-sky-700 rounded-full w-11 h-11 flex items-center justify-center font-medium text-sm">
+                        {initials(r.full_name)}
+                      </span>
+                      <div>
+                        <p className="font-medium text-forest-900 text-sm">{r.full_name}</p>
+                        <p className="text-xs text-forest-500">{r.house_number}</p>
+                      </div>
+                      <button onClick={() => removeResident(r.id)} className="text-red-600">
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => approveResident(r.id)} className="text-forest-600">
-                      <Check size={18} />
-                    </button>
-                    <button onClick={() => removeResident(r.id)} className="text-red-600">
-                      <X size={18} />
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <Empty lang={lang} />
+                  ))
+                ) : (
+                  <Empty lang={lang} />
+                )}
+              </div>
+            )}
+
+            {residentSubTab === 'pending' && (
+              <div className="grid gap-2">
+                {pendingResidents.length ? (
+                  pendingResidents.map((r) => (
+                    <div key={r.id} className="bg-white border border-sand-200 rounded-xl p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="bg-amber-100 text-amber-700 rounded-full w-9 h-9 flex items-center justify-center font-medium text-xs">
+                          {initials(r.full_name)}
+                        </span>
+                        <div>
+                          <p className="font-medium text-forest-900 text-sm">{r.full_name}</p>
+                          <p className="text-xs text-forest-500">{r.house_number}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => approveResident(r.id)} className="text-forest-600">
+                          <Check size={18} />
+                        </button>
+                        <button onClick={() => removeResident(r.id)} className="text-red-600">
+                          <X size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <Empty lang={lang} />
+                )}
+              </div>
             )}
           </div>
         )}
@@ -425,22 +451,6 @@ export default function CommitteeDashboard() {
                     </button>
                   </div>
                 </div>
-                <p className="text-sm text-forest-700">{n.body}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === 'newsUpdates' && (
-          <div className="grid gap-4">
-            <form onSubmit={createNews} className="bg-white border border-sand-200 rounded-xl p-4 grid gap-2">
-              <input name="title" required placeholder={t(lang, 'subject')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
-              <textarea name="body" required placeholder={t(lang, 'description')} className="border border-sand-200 rounded-lg px-3 py-2 text-sm" />
-              <button className="bg-forest-600 text-white rounded-lg py-2 text-sm font-medium">{t(lang, 'createNotice')}</button>
-            </form>
-            {news.map((n) => (
-              <div key={n.id} className="bg-white border border-sand-200 border-l-4 border-l-sky-400 rounded-xl p-4">
-                <h3 className="font-medium text-forest-900 mb-1">{n.title}</h3>
                 <p className="text-sm text-forest-700">{n.body}</p>
               </div>
             ))}
@@ -549,34 +559,6 @@ export default function CommitteeDashboard() {
                   </div>
                 </div>
                 {ev.description && <p className="text-sm text-forest-700">{ev.description}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === 'documents' && (
-          <div className="grid gap-4">
-            <form onSubmit={handleUploadDocument} className="bg-white border border-sand-200 rounded-xl p-4 grid gap-2">
-              <input
-                required
-                placeholder={t(lang, 'documentTitle')}
-                value={docTitle}
-                onChange={(e) => setDocTitle(e.target.value)}
-                className="border border-sand-200 rounded-lg px-3 py-2 text-sm"
-              />
-              <input ref={fileInputRef} required type="file" accept="application/pdf" className="text-sm" />
-              <button disabled={uploading} className="flex items-center justify-center gap-2 bg-forest-600 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50">
-                <Upload size={14} /> {uploading ? '…' : t(lang, 'uploadDocument')}
-              </button>
-            </form>
-            {documents.map((doc) => (
-              <div key={doc.id} className="bg-white border border-sand-200 border-l-4 border-l-orange-400 rounded-xl p-4 flex items-center justify-between">
-                <a href={doc.file_url} target="_blank" rel="noreferrer" className="text-sm font-medium text-forest-900 underline">
-                  {doc.title}
-                </a>
-                <button onClick={() => deleteDocument(doc.id, doc.file_url)} className="text-red-600">
-                  <Trash2 size={14} />
-                </button>
               </div>
             ))}
           </div>
