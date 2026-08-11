@@ -132,7 +132,7 @@ export default function LoginPage() {
       </div>
 
       <div className="hidden lg:block flex-1 relative">
-        <img src="/building-hero.jpg" alt="Karim Residencia" className="absolute inset-0 w-full h-full object-cover" />
+        <img src="/building-login.jpg" alt="Karim Residencia" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         <div className="absolute bottom-6 left-6 text-white">
           <p className="font-display font-semibold text-lg drop-shadow">{t(lang, 'appName')}</p>

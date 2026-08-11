@@ -17,7 +17,7 @@ export default function LandingPage() {
   return (
     <div
       className="min-h-screen flex flex-col relative bg-cover bg-center overflow-hidden"
-      style={{ backgroundImage: "url('/building-hero.jpg')" }}
+      style={{ backgroundImage: "url('/building-secondary.jpg')" }}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-forest-900/55 to-black/70" />
       <div

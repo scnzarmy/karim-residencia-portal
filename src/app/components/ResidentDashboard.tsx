@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   Pin,
   LogOut,
@@ -75,6 +75,7 @@ export default function ResidentDashboard() {
   const [description, setDescription] = useState('')
   const [showRules, setShowRules] = useState(false)
   const [proofNote, setProofNote] = useState('')
+  const proofFileRef = useRef<HTMLInputElement>(null)
   const [amount, setAmount] = useState('')
   const [alertDismissed, setAlertDismissed] = useState(false)
 
@@ -99,10 +100,12 @@ export default function ResidentDashboard() {
 
   async function handleMarkPaid(e: React.FormEvent) {
     e.preventDefault()
-    await markDuePaid(currentMonthKey(), Number(amount) || 0, proofNote)
+    const file = proofFileRef.current?.files?.[0] ?? null
+    await markDuePaid(currentMonthKey(), Number(amount) || 0, proofNote, file)
     toast.success(t(lang, 'markPaid'))
     setProofNote('')
     setAmount('')
+    if (proofFileRef.current) proofFileRef.current.value = ''
   }
 
   if (profile && !profile.approved) {
@@ -382,15 +385,31 @@ export default function ResidentDashboard() {
                     onChange={(e) => setProofNote(e.target.value)}
                     className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 outline-none focus:border-white/40"
                   />
+                  <label className="grid gap-1">
+                    <span className="text-xs text-white/60">{t(lang, 'attachProofOptional')}</span>
+                    <input
+                      ref={proofFileRef}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="text-xs text-white/80 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-white/15 file:text-white file:text-xs"
+                    />
+                  </label>
                   <button className="bg-emerald-500 text-white rounded-lg py-2 text-sm font-medium hover:bg-emerald-600 transition">
                     {t(lang, 'markPaid')}
                   </button>
                 </form>
               )}
               {currentMonthDue && (
-                <p className="text-sm font-medium text-white/90">
-                  {currentMonthDue.status === 'confirmed' ? t(lang, 'duesConfirmed') : t(lang, 'duesMarkedPaid')}
-                </p>
+                <div>
+                  <p className="text-sm font-medium text-white/90">
+                    {currentMonthDue.status === 'confirmed' ? t(lang, 'duesConfirmed') : t(lang, 'duesMarkedPaid')}
+                  </p>
+                  {currentMonthDue.proof_file_url && (
+                    <a href={currentMonthDue.proof_file_url} target="_blank" rel="noreferrer" className="text-xs text-white/70 underline">
+                      {t(lang, 'viewProof')}
+                    </a>
+                  )}
+                </div>
               )}
             </div>
 

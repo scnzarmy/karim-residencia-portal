@@ -69,6 +69,7 @@ export interface Due {
   amount: number
   status: 'pending' | 'marked_paid' | 'confirmed'
   proof_note: string | null
+  proof_file_url: string | null
   created_at: string
 }
 
@@ -138,7 +139,7 @@ interface AppState {
   activeAlert: Alert | null
   polls: Poll[]
   pollVotes: PollVote[]
-  markDuePaid: (month: string, amount: number, proofNote: string) => Promise<void>
+  markDuePaid: (month: string, amount: number, proofNote: string, proofFile?: File | null) => Promise<void>
   confirmDue: (id: string) => Promise<void>
   createEvent: (title: string, description: string, date: string) => Promise<void>
   deleteEvent: (id: string) => Promise<void>
@@ -302,8 +303,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshBlockData()
   }
 
-  async function markDuePaid(month: string, amount: number, proofNote: string) {
+  async function markDuePaid(month: string, amount: number, proofNote: string, proofFile?: File | null) {
     if (!profile || !selectedBlock) return
+    let proof_file_url: string | null = null
+    if (proofFile) {
+      const path = `dues-proofs/${selectedBlock}/${profile.id}-${month}-${Date.now()}-${proofFile.name}`
+      const { error: uploadError } = await supabase.storage.from('documents').upload(path, proofFile)
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
+        proof_file_url = urlData.publicUrl
+      }
+    }
     await supabase.from('dues').upsert(
       {
         block_id: selectedBlock,
@@ -312,6 +322,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         amount,
         status: 'marked_paid',
         proof_note: proofNote,
+        ...(proof_file_url ? { proof_file_url } : {}),
       },
       { onConflict: 'resident_id,month' },
     )

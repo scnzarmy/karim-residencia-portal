@@ -505,6 +505,11 @@ export default function CommitteeDashboard() {
                     <p className="text-xs text-forest-500">
                       {t(lang, 'amount')}: {d.amount} {d.proof_note ? `· ${d.proof_note}` : ''}
                     </p>
+                    {d.proof_file_url && (
+                      <a href={d.proof_file_url} target="_blank" rel="noreferrer" className="text-xs text-forest-600 underline">
+                        {t(lang, 'viewProof')}
+                      </a>
+                    )}
                   </div>
                   {d.status === 'confirmed' ? (
                     <span className="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">{t(lang, 'duesConfirmed')}</span>
