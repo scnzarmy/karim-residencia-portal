@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
+import { Analytics } from '@vercel/analytics/react'
 import { AppProvider, useApp } from './context/AppContext'
 import LandingPage from './components/LandingPage'
 import BlockSelection from './components/BlockSelection'
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <AppProvider>
       <Toaster position="top-center" richColors />
+      <Analytics />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
