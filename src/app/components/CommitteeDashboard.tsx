@@ -21,8 +21,8 @@ import {
   Upload,
   Inbox,
   Menu,
-  Building2,
 } from 'lucide-react'
+import BrandMark from './BrandMark'
 import { toast } from 'sonner'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { useApp } from '../context/AppContext'
@@ -233,7 +233,7 @@ export default function CommitteeDashboard() {
       >
         <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
           <span className="bg-forest-600 text-white rounded-lg p-2 shrink-0">
-            <Building2 size={18} />
+            <BrandMark size={20} />
           </span>
           <div className="min-w-0">
             <p className="font-display text-white text-sm font-semibold leading-tight truncate">{t(lang, 'appName')}</p>
@@ -313,7 +313,7 @@ export default function CommitteeDashboard() {
                       <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
                       <YAxis allowDecimals={false} tick={{ fontSize: 10 }} width={24} />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#2f684c" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" fill="#42503b" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (

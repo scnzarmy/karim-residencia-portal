@@ -17,10 +17,10 @@ import {
   Download,
   Inbox,
   Menu,
-  Building2,
   LayoutGrid,
   User,
 } from 'lucide-react'
+import BrandMark from './BrandMark'
 import { toast } from 'sonner'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useApp } from '../context/AppContext'
@@ -139,7 +139,7 @@ export default function ResidentDashboard() {
       >
         <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
           <span className="bg-forest-600 text-white rounded-lg p-2 shrink-0">
-            <Building2 size={18} />
+            <BrandMark size={20} />
           </span>
           <div className="min-w-0">
             <p className="font-display text-white text-sm font-semibold leading-tight truncate">{t(lang, 'appName')}</p>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Building2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import BrandMark from './BrandMark'
 import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
 import { t } from '../translations'
@@ -109,7 +110,7 @@ export default function LoginPage() {
         <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto lg:mx-0">
           <div className="flex items-center gap-2 mb-8">
             <span className="bg-forest-600 text-white rounded-lg p-1.5">
-              <Building2 size={16} />
+              <BrandMark size={18} />
             </span>
             <span className="font-display font-semibold text-forest-900 text-sm">{t(lang, 'appName')}</span>
           </div>

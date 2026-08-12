@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2 } from 'lucide-react'
 import { toast } from 'sonner'
+import BrandMark from './BrandMark'
 import { useApp } from '../context/AppContext'
 import { t } from '../translations'
 import { supabase } from '../../lib/supabaseClient'
@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
       <div className="max-w-sm w-full">
         <div className="flex items-center gap-2 mb-8 justify-center">
           <span className="bg-forest-600 text-white rounded-lg p-1.5">
-            <Building2 size={16} />
+            <BrandMark size={18} />
           </span>
           <span className="font-display font-semibold text-forest-900 text-sm">{t(lang, 'appName')}</span>
         </div>

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { Users, ShieldCheck, Globe, Building2 } from 'lucide-react'
+import { Users, ShieldCheck, Globe } from 'lucide-react'
+import BrandMark from './BrandMark'
 import { useApp } from '../context/AppContext'
 import { t } from '../translations'
 import { Role } from '../context/AppContext'
@@ -29,7 +30,7 @@ export default function LandingPage() {
         <header className="flex items-center justify-between px-6 py-5 max-w-3xl w-full mx-auto">
           <div className="flex items-center gap-2">
             <span className="bg-white/15 backdrop-blur text-white rounded-lg p-1.5">
-              <Building2 size={18} />
+              <BrandMark size={20} />
             </span>
             <span className="font-display font-semibold text-white text-sm tracking-wide">
               {t(lang, 'appName')}
@@ -57,7 +58,7 @@ export default function LandingPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.5 }}
             >
-              <Building2 size={32} />
+              <BrandMark size={44} />
             </motion.span>
 
             <motion.h1
