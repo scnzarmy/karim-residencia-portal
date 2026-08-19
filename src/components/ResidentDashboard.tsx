@@ -18,6 +18,7 @@ export default function ResidentDashboard({ profile }: { profile: Profile }) {
   const tabs = [
     { id: 'home', icon: '🏠', label: 'Home' },
     { id: 'maintenance', icon: '🔧', label: 'Maintenance' },
+    { id: 'dues', icon: '💰', label: 'Dues' },
     { id: 'announcements', icon: '📢', label: 'Notices' },
     { id: 'rules', icon: '📋', label: 'Rules' },
     { id: 'profile', icon: '👤', label: 'Profile' },
@@ -31,13 +32,13 @@ export default function ResidentDashboard({ profile }: { profile: Profile }) {
         display: 'flex', flexDirection: 'column', padding: '32px 0', zIndex: 10
       }}>
         {/* Logo */}
-        <div style={{ padding: '0 24px 32px', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
+        <div style={{ padding: '0 24px 32px', borderBottom: '1px solid rgba(216,195,154,0.15)' }}>
           <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--cream)', fontWeight: 600 }}>Karim</div>
           <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--gold)', marginTop: 2 }}>Residencia</div>
         </div>
 
         {/* User info */}
-        <div style={{ padding: '24px', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid rgba(216,195,154,0.15)' }}>
           <div style={{
             width: 48, height: 48, background: 'var(--gold)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -50,7 +51,7 @@ export default function ResidentDashboard({ profile }: { profile: Profile }) {
             {profile?.full_name || 'Resident'}
           </div>
           {profile?.block && (
-            <div style={{ fontSize: 12, color: 'rgba(201,168,76,0.7)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(216,195,154,0.7)' }}>
               Block {profile.block} — Apt {profile.apartment}
             </div>
           )}
@@ -62,7 +63,7 @@ export default function ResidentDashboard({ profile }: { profile: Profile }) {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
               width: '100%', padding: '14px 24px',
               display: 'flex', alignItems: 'center', gap: 12,
-              background: activeTab === tab.id ? 'rgba(201,168,76,0.1)' : 'transparent',
+              background: activeTab === tab.id ? 'rgba(216,195,154,0.1)' : 'transparent',
               border: 'none', borderLeft: `3px solid ${activeTab === tab.id ? 'var(--gold)' : 'transparent'}`,
               color: activeTab === tab.id ? 'var(--gold)' : 'rgba(245,240,232,0.6)',
               fontSize: 14, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
@@ -74,7 +75,7 @@ export default function ResidentDashboard({ profile }: { profile: Profile }) {
         </nav>
 
         {/* Sign out */}
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(201,168,76,0.15)' }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(216,195,154,0.15)' }}>
           <button onClick={handleSignOut} style={{
             background: 'transparent', border: 'none',
             color: 'rgba(245,240,232,0.4)', fontSize: 13,
@@ -93,6 +94,7 @@ export default function ResidentDashboard({ profile }: { profile: Profile }) {
       <main style={{ marginLeft: 240, flex: 1, padding: '48px' }}>
         {activeTab === 'home' && <HomeTab profile={profile} />}
         {activeTab === 'maintenance' && <MaintenanceTab />}
+        {activeTab === 'dues' && <DuesTab profile={profile} />}
         {activeTab === 'announcements' && <AnnouncementsTab />}
         {activeTab === 'rules' && <RulesTab />}
         {activeTab === 'profile' && <ProfileTab profile={profile} />}
@@ -153,7 +155,17 @@ function HomeTab({ profile }: { profile: Profile }) {
 
 function MaintenanceTab() {
   const [form, setForm] = useState({ category: '', description: '', urgency: 'normal' })
+  const [image, setImage] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => setImage(reader.result as string)
+      reader.readAsDataURL(file)
+    }
+  }
 
   return (
     <div>
@@ -165,7 +177,7 @@ function MaintenanceTab() {
           <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
           <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'var(--dark)', marginBottom: 12 }}>Request Submitted</h3>
           <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.7 }}>Your maintenance request has been received. The committee will review and respond shortly.</p>
-          <button onClick={() => { setSubmitted(false); setForm({ category: '', description: '', urgency: 'normal' }) }}
+          <button onClick={() => { setSubmitted(false); setForm({ category: '', description: '', urgency: 'normal' }); setImage(null) }}
             className="btn-outline" style={{ marginTop: 24, fontSize: 13 }}>New Request</button>
         </div>
       ) : (
@@ -193,7 +205,7 @@ function MaintenanceTab() {
               ))}
             </div>
           </div>
-          <div style={{ marginBottom: 32 }}>
+          <div style={{ marginBottom: 24 }}>
             <label style={{ display: 'block', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--dark)', marginBottom: 8, fontWeight: 500 }}>Description</label>
             <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
               placeholder="Describe the issue in detail..." rows={5}
@@ -202,12 +214,154 @@ function MaintenanceTab() {
               onBlur={e => e.target.style.borderColor = 'var(--border)'}
             />
           </div>
+          <div style={{ marginBottom: 32 }}>
+            <label style={{ display: 'block', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--dark)', marginBottom: 8, fontWeight: 500 }}>
+              Photo (Optional)
+              <span style={{ color: 'var(--muted)', fontWeight: 400, textTransform: 'none', letterSpacing: 'normal', fontSize: 12 }}> — Attach an image to help show the issue</span>
+            </label>
+            {image ? (
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <img src={image} alt="Uploaded" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', border: '1px solid var(--border)' }} />
+                <button onClick={() => setImage(null)} style={{
+                  position: 'absolute', top: 8, right: 8,
+                  width: 28, height: 28, borderRadius: '50%',
+                  background: 'var(--dark)', color: 'var(--cream)',
+                  border: 'none', cursor: 'pointer', fontSize: 14,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>×</button>
+              </div>
+            ) : (
+              <label style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '32px', border: '2px dashed var(--border)', cursor: 'pointer',
+                transition: 'border-color 0.2s', background: 'var(--warm-white)'
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--gold)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+              >
+                <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
+                <div style={{ fontSize: 13, color: 'var(--muted)' }}>Click to upload a photo</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>JPG, PNG up to 5MB</div>
+                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+              </label>
+            )}
+          </div>
           <button onClick={() => form.category && form.description && setSubmitted(true)}
             className="btn-primary" style={{ fontSize: 13, opacity: !form.category || !form.description ? 0.5 : 1 }}>
             Submit Request
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+function DuesTab({ profile }: { profile: Profile }) {
+  const [selectedMonth, setSelectedMonth] = useState('')
+  const [paidMonths, setPaidMonths] = useState<string[]>([])
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+
+  const currentYear = new Date().getFullYear()
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
+
+  const currentMonthIndex = new Date().getMonth()
+  const dues = months.slice(0, currentMonthIndex + 1).map((month, i) => ({
+    month,
+    year: currentYear,
+    amount: '5,000',
+    status: paidMonths.includes(month) ? 'paid' : 'pending',
+    dueDate: `5th ${month}`,
+  }))
+
+  const handlePayNow = () => {
+    if (selectedMonth) {
+      setPaidMonths(prev => [...prev, selectedMonth])
+      setShowPaymentModal(true)
+      setTimeout(() => setShowPaymentModal(false), 3000)
+      setSelectedMonth('')
+    }
+  }
+
+  return (
+    <div>
+      <p style={{ fontSize: 11, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Payments</p>
+      <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 40, color: 'var(--dark)', marginBottom: 40 }}>Monthly Dues</h1>
+
+      {showPaymentModal && (
+        <div style={{
+          background: '#E8F5E9', border: '1px solid #4CAF50', padding: '16px 24px',
+          marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12
+        }}>
+          <span style={{ fontSize: 20 }}>✅</span>
+          <div>
+            <div style={{ fontWeight: 500, color: '#2E7D32', fontSize: 14 }}>Payment Successful!</div>
+            <div style={{ fontSize: 13, color: '#558B2F' }}>Your payment has been recorded. Receipt will be sent to your email.</div>
+          </div>
+        </div>
+      )}
+
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 40 }}>
+        <div style={{ background: 'white', padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Total Dues</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, color: 'var(--dark)', fontWeight: 600 }}>PKR {(dues.length * 5000).toLocaleString()}</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Paid</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, color: '#4CAF50', fontWeight: 600 }}>PKR {(paidMonths.length * 5000).toLocaleString()}</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Pending</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, color: 'var(--terracotta)', fontWeight: 600 }}>PKR {((dues.length - paidMonths.length) * 5000).toLocaleString()}</div>
+        </div>
+      </div>
+
+      {/* Dues list */}
+      <div style={{ background: 'white', border: '1px solid var(--border)', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--dark)' }}>Payment History</h3>
+          <div style={{ fontSize: 12, color: 'var(--muted)' }}>Unit: {profile?.block || '—'}{profile?.apartment || ''}</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {dues.reverse().map((d, i) => (
+            <div key={i} style={{
+              padding: '18px 28px',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              borderBottom: i < dues.length - 1 ? '1px solid var(--border)' : 'none'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{
+                  width: 40, height: 40,
+                  background: d.status === 'paid' ? '#E8F5E9' : '#FFF3E0',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18
+                }}>
+                  {d.status === 'paid' ? '✅' : '⏳'}
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--dark)' }}>{d.month} {d.year}</div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>Due by {d.dueDate}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--dark)' }}>PKR {d.amount}</span>
+                {d.status === 'pending' ? (
+                  <button
+                    onClick={() => { setSelectedMonth(d.month); handlePayNow() }}
+                    className="btn-primary"
+                    style={{ fontSize: 12, padding: '8px 20px' }}
+                  >Pay Now</button>
+                ) : (
+                  <span style={{ fontSize: 12, color: '#4CAF50', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Paid</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

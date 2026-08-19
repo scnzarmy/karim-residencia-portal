@@ -5,12 +5,12 @@
   --warm-white: #FAFAF7;
   --dark: #1A1A18;
   --dark-80: rgba(26,26,24,0.8);
-  --gold: #C9A84C;
-  --gold-light: #E8D4A0;
+  --gold: #D8C39A;
+  --gold-light: #E8DCC8;
   --sage: #7A8C72;
   --terracotta: #C47A52;
   --muted: #8A8880;
-  --border: rgba(201,168,76,0.2);
+  --border: rgba(216,195,154,0.2);
   --shadow: 0 4px 32px rgba(26,26,24,0.08);
   --shadow-md: 0 8px 48px rgba(26,26,24,0.12);
 }

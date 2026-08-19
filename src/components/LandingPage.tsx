@@ -57,18 +57,18 @@ export default function LandingPage() {
         <div style={{
           position: 'absolute', top: '15%', right: '8%',
           width: 320, height: 450,
-          border: '1px solid rgba(201,168,76,0.3)',
+          border: '1px solid rgba(216,195,154,0.3)',
           transform: 'rotate(3deg)'
         }} />
         <div style={{
           position: 'absolute', top: '18%', right: '6%',
           width: 320, height: 450,
-          border: '1px solid rgba(201,168,76,0.15)',
+          border: '1px solid rgba(216,195,154,0.15)',
           transform: 'rotate(-2deg)'
         }} />
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
-          background: 'linear-gradient(transparent, rgba(201,168,76,0.05))'
+          background: 'linear-gradient(transparent, rgba(216,195,154,0.05))'
         }} />
 
         {/* Gold accent line */}
@@ -120,7 +120,7 @@ export default function LandingPage() {
           position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
         }}>
-          <span style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.7)' }}>Scroll</span>
+          <span style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(216,195,154,0.7)' }}>Scroll</span>
           <div style={{
             width: 1, height: 48,
             background: 'linear-gradient(var(--gold), transparent)',

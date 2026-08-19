@@ -47,12 +47,12 @@ export default function LoginPage() {
         <div style={{
           position: 'absolute', bottom: -80, right: -80,
           width: 400, height: 400, borderRadius: '50%',
-          border: '60px solid rgba(201,168,76,0.08)'
+          border: '60px solid rgba(216,195,154,0.08)'
         }} />
         <div style={{
           position: 'absolute', top: 120, right: 40,
           width: 200, height: 280,
-          border: '1px solid rgba(201,168,76,0.2)',
+          border: '1px solid rgba(216,195,154,0.2)',
           transform: 'rotate(5deg)'
         }} />
 
@@ -82,7 +82,7 @@ export default function LoginPage() {
           {['Community', 'Security', 'Comfort'].map((word) => (
             <div key={word} style={{ textAlign: 'center' }}>
               <div style={{ width: 40, height: 1, background: 'var(--gold)', margin: '0 auto 8px' }} />
-              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.7)' }}>{word}</span>
+              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(216,195,154,0.7)' }}>{word}</span>
             </div>
           ))}
         </div>

@@ -18,6 +18,7 @@ export default function CommitteeDashboard({ profile }: { profile: Profile }) {
   const tabs = [
     { id: 'overview', icon: '📊', label: 'Overview' },
     { id: 'requests', icon: '🔧', label: 'Requests' },
+    { id: 'dues', icon: '💰', label: 'Dues' },
     { id: 'announcements', icon: '📢', label: 'Post Notice' },
     { id: 'residents', icon: '👥', label: 'Residents' },
     { id: 'rules', icon: '📋', label: 'Rules' },
@@ -30,12 +31,12 @@ export default function CommitteeDashboard({ profile }: { profile: Profile }) {
         width: 240, background: 'var(--dark)', position: 'fixed', top: 0, bottom: 0,
         display: 'flex', flexDirection: 'column', padding: '32px 0', zIndex: 10
       }}>
-        <div style={{ padding: '0 24px 32px', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
+        <div style={{ padding: '0 24px 32px', borderBottom: '1px solid rgba(216,195,154,0.15)' }}>
           <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--cream)', fontWeight: 600 }}>Karim</div>
           <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--gold)', marginTop: 2 }}>Committee Portal</div>
         </div>
 
-        <div style={{ padding: '24px', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid rgba(216,195,154,0.15)' }}>
           <div style={{
             width: 48, height: 48, background: 'var(--terracotta)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -47,7 +48,7 @@ export default function CommitteeDashboard({ profile }: { profile: Profile }) {
           <div style={{ fontSize: 14, color: 'var(--cream)', fontWeight: 500, marginBottom: 4 }}>
             {profile?.full_name || 'Committee Member'}
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(201,168,76,0.7)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Committee</div>
+          <div style={{ fontSize: 11, color: 'rgba(216,195,154,0.7)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Committee</div>
         </div>
 
         <nav style={{ flex: 1, padding: '16px 0' }}>
@@ -55,7 +56,7 @@ export default function CommitteeDashboard({ profile }: { profile: Profile }) {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
               width: '100%', padding: '14px 24px',
               display: 'flex', alignItems: 'center', gap: 12,
-              background: activeTab === tab.id ? 'rgba(201,168,76,0.1)' : 'transparent',
+              background: activeTab === tab.id ? 'rgba(216,195,154,0.1)' : 'transparent',
               border: 'none', borderLeft: `3px solid ${activeTab === tab.id ? 'var(--gold)' : 'transparent'}`,
               color: activeTab === tab.id ? 'var(--gold)' : 'rgba(245,240,232,0.6)',
               fontSize: 14, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
@@ -66,7 +67,7 @@ export default function CommitteeDashboard({ profile }: { profile: Profile }) {
           ))}
         </nav>
 
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(201,168,76,0.15)' }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(216,195,154,0.15)' }}>
           <button onClick={handleSignOut} style={{
             background: 'transparent', border: 'none',
             color: 'rgba(245,240,232,0.4)', fontSize: 13,
@@ -81,6 +82,7 @@ export default function CommitteeDashboard({ profile }: { profile: Profile }) {
       <main style={{ marginLeft: 240, flex: 1, padding: '48px' }}>
         {activeTab === 'overview' && <OverviewTab />}
         {activeTab === 'requests' && <RequestsTab />}
+        {activeTab === 'dues' && <CommitteeDuesTab />}
         {activeTab === 'announcements' && <PostNoticeTab />}
         {activeTab === 'residents' && <ResidentsTab />}
         {activeTab === 'rules' && <ManageRulesTab />}
@@ -236,6 +238,167 @@ function ResidentsTab() {
           Resident data will be pulled from your Supabase database once residents register through the portal.
         </p>
       </div>
+    </div>
+  )
+}
+
+function CommitteeDuesTab() {
+  const [reminderSent, setReminderSent] = useState(false)
+  const [selectedMonth, setSelectedMonth] = useState('')
+  const [reminderMessage, setReminderMessage] = useState('')
+  const [sentReminders, setSentReminders] = useState<{month: string, message: string, date: string}[]>([])
+
+  const currentYear = new Date().getMonth() + 1
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
+
+  const currentMonthIndex = new Date().getMonth()
+  const dues = months.slice(0, currentMonthIndex + 1).map((month, i) => ({
+    month,
+    year: new Date().getFullYear(),
+    amount: '5,000',
+    totalResidents: 150,
+    paid: Math.floor(Math.random() * 80) + 50,
+  }))
+
+  const handleSendReminder = () => {
+    if (selectedMonth && reminderMessage.trim()) {
+      setSentReminders(prev => [{
+        month: selectedMonth,
+        message: reminderMessage,
+        date: new Date().toLocaleDateString()
+      }, ...prev])
+      setReminderSent(true)
+      setSelectedMonth('')
+      setReminderMessage('')
+      setTimeout(() => setReminderSent(false), 3000)
+    }
+  }
+
+  return (
+    <div>
+      <p style={{ fontSize: 11, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Payments</p>
+      <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 40, color: 'var(--dark)', marginBottom: 40 }}>Dues Management</h1>
+
+      {reminderSent && (
+        <div style={{
+          background: '#E8F5E9', border: '1px solid #4CAF50', padding: '16px 24px',
+          marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12
+        }}>
+          <span style={{ fontSize: 20 }}>✅</span>
+          <div>
+            <div style={{ fontWeight: 500, color: '#2E7D32', fontSize: 14 }}>Reminder Sent!</div>
+            <div style={{ fontSize: 13, color: '#558B2F' }}>Payment reminder has been sent to all residents.</div>
+          </div>
+        </div>
+      )}
+
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 40 }}>
+        <div style={{ background: 'white', padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>💰</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'var(--dark)', fontWeight: 600 }}>PKR {((currentMonthIndex + 1) * 750000).toLocaleString()}</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>Total Expected (YTD)</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>✅</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: '#4CAF50', fontWeight: 600 }}>PKR {((currentMonthIndex + 1) * 500000).toLocaleString()}</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>Collected (YTD)</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'var(--terracotta)', fontWeight: 600 }}>PKR {((currentMonthIndex + 1) * 250000).toLocaleString()}</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>Outstanding (YTD)</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>👥</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'var(--dark)', fontWeight: 600 }}>150</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>Total Units</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        {/* Monthly Dues Table */}
+        <div style={{ background: 'white', border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--dark)' }}>Monthly Breakdown</h3>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {dues.reverse().map((d, i) => (
+              <div key={i} style={{
+                padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                borderBottom: i < dues.length - 1 ? '1px solid var(--border)' : 'none'
+              }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--dark)' }}>{d.month} {d.year}</div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>{d.paid}/{d.totalResidents} paid</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 60, height: 4, background: 'var(--border)', borderRadius: 2 }}>
+                    <div style={{ width: `${(d.paid / d.totalResidents) * 100}%`, height: '100%', background: 'var(--gold)', borderRadius: 2 }} />
+                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--muted)', minWidth: 32, textAlign: 'right' }}>{Math.round((d.paid / d.totalResidents) * 100)}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Send Reminder */}
+        <div style={{ background: 'white', border: '1px solid var(--border)', padding: 28 }}>
+          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--dark)', marginBottom: 20 }}>Send Payment Reminder</h3>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--dark)', marginBottom: 8, fontWeight: 500 }}>Select Month</label>
+            <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}
+              style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--border)', fontSize: 14, outline: 'none', background: 'white' }}>
+              <option value="">Choose month</option>
+              {months.slice(0, currentMonthIndex + 1).reverse().map(m => (
+                <option key={m} value={m}>{m} {new Date().getFullYear()}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--dark)', marginBottom: 8, fontWeight: 500 }}>Message</label>
+            <textarea value={reminderMessage} onChange={e => setReminderMessage(e.target.value)}
+              placeholder={`Dear Resident,\n\nThis is a reminder that your maintenance dues for ${selectedMonth || '[Month]'} are due. Please ensure payment by the 5th of the month.\n\nThank you,\nKarim Residencia Committee`}
+              rows={6}
+              style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--border)', fontSize: 14, outline: 'none', resize: 'vertical', fontFamily: 'DM Sans, sans-serif', lineHeight: 1.6 }}
+              onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            />
+          </div>
+          <button onClick={handleSendReminder}
+            className="btn-primary"
+            style={{ fontSize: 13, width: '100%', opacity: !selectedMonth || !reminderMessage.trim() ? 0.5 : 1 }}>
+            Send Reminder to All Residents
+          </button>
+        </div>
+      </div>
+
+      {/* Sent Reminders History */}
+      {sentReminders.length > 0 && (
+        <div style={{ marginTop: 32, background: 'white', border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--dark)' }}>Recent Reminders Sent</h3>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {sentReminders.map((r, i) => (
+              <div key={i} style={{ padding: '16px 24px', borderBottom: i < sentReminders.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--dark)' }}>{r.month} Reminder</span>
+                    <span style={{ fontSize: 12, color: 'var(--muted)', marginLeft: 8 }}>{r.date}</span>
+                  </div>
+                  <span style={{ fontSize: 12, color: '#4CAF50', fontWeight: 500 }}>✓ Sent</span>
+                </div>
+                <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 8, lineHeight: 1.5 }}>{r.message.substring(0, 100)}...</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
