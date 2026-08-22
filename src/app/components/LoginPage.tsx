@@ -79,8 +79,17 @@ export default function LoginPage() {
   const isRegister = mode === 'register' && role === 'resident'
 
   return (
-    <div className="min-h-screen flex bg-white">
-      <div className="flex-1 flex flex-col px-6 sm:px-12 lg:px-16 py-8">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white">
+      <div className="lg:hidden relative h-40 sm:h-52 shrink-0">
+        <img src="/building-login.jpg" alt="Karim Residencia" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+        <div className="absolute bottom-3 left-4 text-white">
+          <p className="font-display font-semibold text-base drop-shadow">{t(lang, 'appName')}</p>
+          <p className="text-xs text-white/80 drop-shadow">{t(lang, 'tagline')}</p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col px-6 sm:px-12 lg:px-16 py-6 lg:py-8">
         <div className="flex items-center justify-between">
           <button onClick={() => navigate('/select-block')} className="flex items-center gap-1 text-sm text-forest-500 hover:text-forest-700">
             <ArrowLeft size={15} /> {t(lang, 'back')}
@@ -107,8 +116,8 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto lg:mx-0">
-          <div className="flex items-center gap-2 mb-8">
+        <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto lg:mx-0 py-6">
+          <div className="hidden lg:flex items-center gap-2 mb-8">
             <span className="bg-forest-600 text-white rounded-lg p-1.5">
               <BrandMark size={18} />
             </span>

@@ -56,6 +56,7 @@ export interface Complaint {
   resident_id: string
   subject: string
   description: string
+  image_url: string | null
   status: 'open' | 'in_progress' | 'resolved'
   committee_reply: string | null
   created_at: string

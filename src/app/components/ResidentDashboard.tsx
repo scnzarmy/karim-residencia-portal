@@ -77,17 +77,33 @@ export default function ResidentDashboard() {
   const [showProfile, setShowProfile] = useState(false)
   const [proofNote, setProofNote] = useState('')
   const proofFileRef = useRef<HTMLInputElement>(null)
+  const complaintImageRef = useRef<HTMLInputElement>(null)
   const [amount, setAmount] = useState('')
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthKey())
+  const maxPickerMonth = currentMonthKey()
   const [alertDismissed, setAlertDismissed] = useState(false)
 
   async function submitComplaint(e: React.FormEvent) {
     e.preventDefault()
     if (!profile || !selectedBlock) return
+
+    let image_url: string | null = null
+    const file = complaintImageRef.current?.files?.[0]
+    if (file) {
+      const path = `complaint-photos/${selectedBlock}/${profile.id}-${Date.now()}-${file.name}`
+      const { error: uploadError } = await supabase.storage.from('documents').upload(path, file)
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
+        image_url = urlData.publicUrl
+      }
+    }
+
     const { error } = await supabase.from('complaints').insert({
       block_id: selectedBlock,
       resident_id: profile.id,
       subject,
       description,
+      ...(image_url ? { image_url } : {}),
     })
     if (error) {
       toast.error(error.message)
@@ -96,13 +112,14 @@ export default function ResidentDashboard() {
     toast.success(t(lang, 'submit'))
     setSubject('')
     setDescription('')
+    if (complaintImageRef.current) complaintImageRef.current.value = ''
     refreshBlockData()
   }
 
   async function handleMarkPaid(e: React.FormEvent) {
     e.preventDefault()
     const file = proofFileRef.current?.files?.[0] ?? null
-    await markDuePaid(currentMonthKey(), Number(amount) || 0, proofNote, file)
+    await markDuePaid(selectedMonth, Number(amount) || 0, proofNote, file)
     toast.success(t(lang, 'markPaid'))
     setProofNote('')
     setAmount('')
@@ -123,7 +140,7 @@ export default function ResidentDashboard() {
   }
 
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
-  const currentMonthDue = dues.find((d) => d.month === currentMonthKey())
+  const selectedDue = dues.find((d) => d.month === selectedMonth)
   const activePolls = polls.filter((p) => !p.closed)
 
   return (
@@ -334,6 +351,15 @@ export default function ResidentDashboard() {
                 onChange={(e) => setDescription(e.target.value)}
                 className="border border-sand-200 rounded-lg px-3 py-2 text-sm min-h-[80px] outline-none focus:border-forest-400"
               />
+              <label className="grid gap-1">
+                <span className="text-xs text-forest-500">{t(lang, 'attachPhotoOptional')}</span>
+                <input
+                  ref={complaintImageRef}
+                  type="file"
+                  accept="image/*"
+                  className="text-xs text-forest-700 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-sand-100 file:text-forest-700 file:text-xs"
+                />
+              </label>
               <button type="submit" className="flex items-center justify-center gap-2 bg-forest-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-forest-700 transition">
                 <Send size={14} /> {t(lang, 'submitComplaint')}
               </button>
@@ -348,6 +374,11 @@ export default function ResidentDashboard() {
                   </span>
                 </div>
                 <p className="text-sm text-forest-700">{c.description}</p>
+                {c.image_url && (
+                  <a href={c.image_url} target="_blank" rel="noreferrer" className="text-xs text-forest-600 underline mt-1 inline-block">
+                    {t(lang, 'viewPhoto')}
+                  </a>
+                )}
                 {c.committee_reply && <p className="text-xs text-forest-500 mt-2 italic">{c.committee_reply}</p>}
               </div>
             ))}
@@ -357,11 +388,18 @@ export default function ResidentDashboard() {
         {tab === 'dues' && (
           <div className="grid gap-4">
             <div className="bg-gradient-to-br from-forest-900 to-forest-800 rounded-2xl p-5 text-white">
-              <p className="text-white/60 text-xs mb-1">{currentMonthKey()}</p>
-              <p className="font-display text-3xl font-semibold mb-3">
-                {currentMonthDue ? currentMonthDue.amount : (amount || '—')}
-              </p>
-              {!currentMonthDue && (
+              <label className="grid gap-1 mb-3">
+                <span className="text-xs text-white/60">{t(lang, 'month')}</span>
+                <input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  max={maxPickerMonth}
+                  className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/40 [color-scheme:dark]"
+                />
+              </label>
+              <p className="font-display text-3xl font-semibold mb-3">{selectedDue ? selectedDue.amount : amount || '—'}</p>
+              {!selectedDue && (
                 <form onSubmit={handleMarkPaid} className="grid gap-2">
                   <input
                     required
@@ -391,13 +429,13 @@ export default function ResidentDashboard() {
                   </button>
                 </form>
               )}
-              {currentMonthDue && (
+              {selectedDue && (
                 <div>
                   <p className="text-sm font-medium text-white/90">
-                    {currentMonthDue.status === 'confirmed' ? t(lang, 'duesConfirmed') : t(lang, 'duesMarkedPaid')}
+                    {selectedDue.status === 'confirmed' ? t(lang, 'duesConfirmed') : t(lang, 'duesMarkedPaid')}
                   </p>
-                  {currentMonthDue.proof_file_url && (
-                    <a href={currentMonthDue.proof_file_url} target="_blank" rel="noreferrer" className="text-xs text-white/70 underline">
+                  {selectedDue.proof_file_url && (
+                    <a href={selectedDue.proof_file_url} target="_blank" rel="noreferrer" className="text-xs text-white/70 underline">
                       {t(lang, 'viewProof')}
                     </a>
                   )}

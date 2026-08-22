@@ -196,6 +196,12 @@ export default function CommitteeDashboard() {
     setUploading(false)
   }
 
+  async function handleSendDuesReminder() {
+    const monthName = new Date().toLocaleString(lang === 'ur' ? 'ur' : 'en', { month: 'long', year: 'numeric' })
+    await createAlert(t(lang, 'duesReminderTitle'), `${t(lang, 'duesReminderBody')} (${monthName})`)
+    toast.success(t(lang, 'sendDuesReminder'))
+  }
+
   async function handleCreateAlert(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = e.currentTarget
@@ -506,6 +512,13 @@ export default function CommitteeDashboard() {
                 <span>{allDues.filter((d) => d.status === 'marked_paid').length} {t(lang, 'duesMarkedPaid')}</span>
                 <span>{allDues.filter((d) => d.status === 'confirmed').length} {t(lang, 'duesConfirmed')}</span>
               </div>
+              <button
+                onClick={handleSendDuesReminder}
+                className="mt-4 flex items-center gap-2 bg-white/15 hover:bg-white/25 transition text-white text-xs rounded-lg px-3 py-2 w-fit"
+              >
+                <Bell size={13} />
+                {t(lang, 'sendDuesReminder')}
+              </button>
             </div>
             {allDues.length ? (
               allDues.map((d) => (
@@ -642,7 +655,7 @@ function ComplaintRow({
   lang,
   onReply,
 }: {
-  c: { id: string; subject: string; description: string; status: string; committee_reply: string | null }
+  c: { id: string; subject: string; description: string; status: string; committee_reply: string | null; image_url: string | null }
   lang: 'en' | 'ur'
   onReply: (id: string, reply: string, status: string) => void
 }) {
@@ -651,6 +664,11 @@ function ComplaintRow({
     <div className="bg-white border border-sand-200 border-l-4 border-l-rose-400 rounded-xl p-4 grid gap-2">
       <h3 className="font-medium text-forest-900">{c.subject}</h3>
       <p className="text-sm text-forest-700">{c.description}</p>
+      {c.image_url && (
+        <a href={c.image_url} target="_blank" rel="noreferrer" className="text-xs text-forest-600 underline w-fit">
+          {t(lang, 'viewPhoto')}
+        </a>
+      )}
       <textarea
         value={reply}
         onChange={(e) => setReply(e.target.value)}
